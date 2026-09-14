@@ -1,0 +1,1670 @@
+{
+    "tables": {
+        "procurement_plans": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "plan_number",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "planning_entity_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "fiscal_year",
+                "type": "year(4)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "current_version_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "status",
+                "type": "varchar(30)",
+                "null": "NO",
+                "key": "",
+                "default": "DRAFT"
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "procurement_plan_versions": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "procurement_plan_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "version_number",
+                "type": "varchar(10)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "status",
+                "type": "varchar(30)",
+                "null": "NO",
+                "key": "",
+                "default": "DRAFT"
+            },
+            {
+                "field": "total_estimated_cost",
+                "type": "decimal(15,2)",
+                "null": "NO",
+                "key": "",
+                "default": "0.00"
+            },
+            {
+                "field": "approval_date",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "approved_by_user_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "revision_reason",
+                "type": "text",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "procurement_plan_items": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "plan_version_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "standard_item_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "item_description",
+                "type": "varchar(255)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "category_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "uom_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "planned_quantity",
+                "type": "decimal(12,2)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "estimated_unit_cost",
+                "type": "decimal(15,2)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "estimated_total_cost",
+                "type": "decimal(15,2)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "target_quarter",
+                "type": "varchar(5)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "funding_source",
+                "type": "varchar(100)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "justification",
+                "type": "text",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "planning_entities": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "entity_code",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "entity_name",
+                "type": "varchar(150)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "entity_type_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "campus_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "parent_entity_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "head_user_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "planning_officer_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "is_active",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "1"
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "item_categories": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "category_code",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "category_name",
+                "type": "varchar(100)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "description",
+                "type": "text",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "is_active",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "1"
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "units_of_measure": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "uom_code",
+                "type": "varchar(20)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "uom_name",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "is_active",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "1"
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "workflow_definitions": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "workflow_code",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "document_type",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "entity_type_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "workflow_name",
+                "type": "varchar(100)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "is_active",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "1"
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "workflow_instances": "ERROR: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'promis.workflow_instances' doesn't exist",
+        "workflow_steps": "ERROR: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'promis.workflow_steps' doesn't exist",
+        "workflow_transitions": "ERROR: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'promis.workflow_transitions' doesn't exist",
+        "workflow_action_logs": [
+            {
+                "field": "id",
+                "type": "bigint(20) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "document_type",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "document_id",
+                "type": "bigint(20) unsigned",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "step_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "actor_user_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "action",
+                "type": "varchar(30)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "pre_status",
+                "type": "varchar(35)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "post_status",
+                "type": "varchar(35)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "comments",
+                "type": "text",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "action_timestamp",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            }
+        ],
+        "plan_review_cycles": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "procurement_plan_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "active_version_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "fiscal_year",
+                "type": "year(4)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "review_quarter",
+                "type": "varchar(5)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "review_status",
+                "type": "varchar(30)",
+                "null": "NO",
+                "key": "",
+                "default": "PENDING"
+            },
+            {
+                "field": "review_outcome",
+                "type": "varchar(30)",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "reviewed_by_user_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "completed_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "review_notes",
+                "type": "text",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "plan_revision_records": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "procurement_plan_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "review_cycle_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "prior_version_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "new_version_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "revision_justification",
+                "type": "text",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "submitted_by_user_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "submitted_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "approved_by_user_id",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "approved_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            }
+        ],
+        "users": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "username",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "email",
+                "type": "varchar(100)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "password_hash",
+                "type": "varchar(255)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "first_name",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "last_name",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "phone",
+                "type": "varchar(25)",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "status",
+                "type": "varchar(20)",
+                "null": "NO",
+                "key": "",
+                "default": "ACTIVE"
+            },
+            {
+                "field": "last_login_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "user_entity_roles": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "user_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "planning_entity_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "role_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "is_primary",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "1"
+            },
+            {
+                "field": "status",
+                "type": "varchar(20)",
+                "null": "NO",
+                "key": "",
+                "default": "ACTIVE"
+            },
+            {
+                "field": "assigned_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "assigned_by",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "roles": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "role_code",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "role_title",
+                "type": "varchar(100)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "description",
+                "type": "text",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "is_system_reserved",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "0"
+            },
+            {
+                "field": "is_active",
+                "type": "tinyint(1)",
+                "null": "NO",
+                "key": "",
+                "default": "1"
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "created_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            },
+            {
+                "field": "updated_at",
+                "type": "datetime",
+                "null": "YES",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "updated_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ],
+        "permissions": [
+            {
+                "field": "id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "permission_code",
+                "type": "varchar(100)",
+                "null": "NO",
+                "key": "UNI",
+                "default": null
+            },
+            {
+                "field": "module_area",
+                "type": "varchar(50)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "description",
+                "type": "varchar(255)",
+                "null": "NO",
+                "key": "",
+                "default": null
+            },
+            {
+                "field": "created_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            }
+        ],
+        "role_permissions": [
+            {
+                "field": "role_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "permission_id",
+                "type": "int(10) unsigned",
+                "null": "NO",
+                "key": "PRI",
+                "default": null
+            },
+            {
+                "field": "granted_at",
+                "type": "datetime",
+                "null": "NO",
+                "key": "",
+                "default": "current_timestamp()"
+            },
+            {
+                "field": "granted_by",
+                "type": "int(10) unsigned",
+                "null": "YES",
+                "key": "MUL",
+                "default": null
+            }
+        ]
+    },
+    "foreign_keys": [],
+    "unique_keys": {
+        "procurement_plans": [
+            {
+                "Table": "procurement_plans",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plans",
+                "Non_unique": 0,
+                "Key_name": "plan_number",
+                "Seq_in_index": 1,
+                "Column_name": "plan_number",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plans",
+                "Non_unique": 0,
+                "Key_name": "uq_entity_fiscal_year",
+                "Seq_in_index": 1,
+                "Column_name": "planning_entity_id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plans",
+                "Non_unique": 0,
+                "Key_name": "uq_entity_fiscal_year",
+                "Seq_in_index": 2,
+                "Column_name": "fiscal_year",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "procurement_plan_versions": [
+            {
+                "Table": "procurement_plan_versions",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plan_versions",
+                "Non_unique": 0,
+                "Key_name": "uq_plan_version",
+                "Seq_in_index": 1,
+                "Column_name": "procurement_plan_id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plan_versions",
+                "Non_unique": 0,
+                "Key_name": "uq_plan_version",
+                "Seq_in_index": 2,
+                "Column_name": "version_number",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plan_versions",
+                "Non_unique": 0,
+                "Key_name": "uq_version_plan",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "procurement_plan_versions",
+                "Non_unique": 0,
+                "Key_name": "uq_version_plan",
+                "Seq_in_index": 2,
+                "Column_name": "procurement_plan_id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "procurement_plan_items": [
+            {
+                "Table": "procurement_plan_items",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "planning_entities": [
+            {
+                "Table": "planning_entities",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "planning_entities",
+                "Non_unique": 0,
+                "Key_name": "entity_code",
+                "Seq_in_index": 1,
+                "Column_name": "entity_code",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "item_categories": [
+            {
+                "Table": "item_categories",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "item_categories",
+                "Non_unique": 0,
+                "Key_name": "category_code",
+                "Seq_in_index": 1,
+                "Column_name": "category_code",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "units_of_measure": [
+            {
+                "Table": "units_of_measure",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "units_of_measure",
+                "Non_unique": 0,
+                "Key_name": "uom_code",
+                "Seq_in_index": 1,
+                "Column_name": "uom_code",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "workflow_definitions": [
+            {
+                "Table": "workflow_definitions",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "workflow_definitions",
+                "Non_unique": 0,
+                "Key_name": "workflow_code",
+                "Seq_in_index": 1,
+                "Column_name": "workflow_code",
+                "Collation": "A",
+                "Cardinality": 1,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "workflow_action_logs": [
+            {
+                "Table": "workflow_action_logs",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 10,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "plan_review_cycles": [
+            {
+                "Table": "plan_review_cycles",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "plan_review_cycles",
+                "Non_unique": 0,
+                "Key_name": "uq_plan_quarter_review",
+                "Seq_in_index": 1,
+                "Column_name": "procurement_plan_id",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "plan_review_cycles",
+                "Non_unique": 0,
+                "Key_name": "uq_plan_quarter_review",
+                "Seq_in_index": 2,
+                "Column_name": "fiscal_year",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "plan_review_cycles",
+                "Non_unique": 0,
+                "Key_name": "uq_plan_quarter_review",
+                "Seq_in_index": 3,
+                "Column_name": "review_quarter",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "plan_revision_records": [
+            {
+                "Table": "plan_revision_records",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "users": [
+            {
+                "Table": "users",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "users",
+                "Non_unique": 0,
+                "Key_name": "username",
+                "Seq_in_index": 1,
+                "Column_name": "username",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "users",
+                "Non_unique": 0,
+                "Key_name": "email",
+                "Seq_in_index": 1,
+                "Column_name": "email",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "user_entity_roles": [
+            {
+                "Table": "user_entity_roles",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "user_entity_roles",
+                "Non_unique": 0,
+                "Key_name": "uq_user_entity_role",
+                "Seq_in_index": 1,
+                "Column_name": "user_id",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "user_entity_roles",
+                "Non_unique": 0,
+                "Key_name": "uq_user_entity_role",
+                "Seq_in_index": 2,
+                "Column_name": "planning_entity_id",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "user_entity_roles",
+                "Non_unique": 0,
+                "Key_name": "uq_user_entity_role",
+                "Seq_in_index": 3,
+                "Column_name": "role_id",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "roles": [
+            {
+                "Table": "roles",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "roles",
+                "Non_unique": 0,
+                "Key_name": "role_code",
+                "Seq_in_index": 1,
+                "Column_name": "role_code",
+                "Collation": "A",
+                "Cardinality": 6,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "permissions": [
+            {
+                "Table": "permissions",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 9,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "permissions",
+                "Non_unique": 0,
+                "Key_name": "permission_code",
+                "Seq_in_index": 1,
+                "Column_name": "permission_code",
+                "Collation": "A",
+                "Cardinality": 9,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "role_permissions": [
+            {
+                "Table": "role_permissions",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "role_id",
+                "Collation": "A",
+                "Cardinality": 13,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "role_permissions",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 2,
+                "Column_name": "permission_id",
+                "Collation": "A",
+                "Cardinality": 54,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ]
+    },
+    "workflow_definitions": "ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'entity_type' in 'where clause'",
+    "planning_permissions": "ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'name' in 'where clause'",
+    "existing_plan_statuses": [
+        "APPROVED"
+    ],
+    "existing_version_statuses": [
+        "APPROVED"
+    ],
+    "all_workflow_transitions": "ERROR: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'promis.workflow_transitions' doesn't exist"
+}
