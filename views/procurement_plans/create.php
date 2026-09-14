@@ -169,7 +169,13 @@
                 <i class="fa-solid fa-floppy-disk"></i> Save as Draft
             </button>
 
-            <button type="submit" name="action" value="submit" class="btn btn-primary" style="font-weight: 700; padding: 0.625rem 1.5rem;" onclick="return confirm('Are you sure you want to submit this Procurement Plan for institutional approval? Editing will be locked until review is complete.');">
+            <button type="submit" name="action" value="submit" class="btn btn-primary" style="font-weight: 700; padding: 0.625rem 1.5rem;"
+                    data-confirm="Are you sure you want to submit this Procurement Plan for institutional approval?"
+                    data-confirm-title="Submit Annual Procurement Plan"
+                    data-confirm-detail="Editing will be locked until the institutional governance review is complete."
+                    data-confirm-type="primary"
+                    data-confirm-btn="Submit for Approval"
+                    data-confirm-icon="fa-paper-plane">
                 <i class="fa-solid fa-paper-plane"></i> Submit Plan for Approval
             </button>
         </div>
@@ -354,7 +360,16 @@ function addItemRow(data = {}) {
             renumberRows();
             recalculateGrandTotals();
         } else {
-            alert('A procurement plan must have at least one line item.');
+            if (typeof window.PromisAlert === 'function') {
+                window.PromisAlert({
+                    title: 'Minimum Line Items Required',
+                    message: 'A procurement plan must contain at least one line item before it can be saved or submitted.',
+                    type: 'warning',
+                    icon: 'fa-triangle-exclamation'
+                });
+            } else {
+                alert('A procurement plan must have at least one line item.');
+            }
         }
     });
 

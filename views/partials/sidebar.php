@@ -168,8 +168,16 @@ if ($pendingBadge === null && !empty($roles)) {
             </div>
             <form action="<?= $e($appUrl ?? '') ?>/logout" method="POST" style="margin: 0;">
                 <?= $csrf() ?>
-                <button type="submit" style="background: none; border: none; color: var(--color-danger); cursor: pointer; padding: 0.375rem; font-size: 0.9375rem; border-radius: var(--radius-sm);" title="Sign Out">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <button type="submit" 
+                        style="background: none; border: none; color: var(--color-danger); cursor: pointer; padding: 0.375rem; font-size: 0.9375rem; border-radius: var(--radius-sm);" 
+                        title="Sign Out"
+                        data-confirm="Are you sure you want to end your active session and sign out of PROMIS?"
+                        data-confirm-title="Sign Out Confirmation"
+                        data-confirm-detail="Any unsaved progress in active forms will be discarded."
+                        data-confirm-type="danger"
+                        data-confirm-btn="Sign Out"
+                        data-confirm-icon="fa-arrow-right-from-bracket">
+                    <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
                 </button>
             </form>
         </div>

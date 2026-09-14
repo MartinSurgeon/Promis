@@ -72,8 +72,16 @@ if ($initials === '') {
         <!-- Sign Out Action -->
         <form action="<?= $e($appUrl ?? '') ?>/logout" method="POST" style="margin: 0;">
             <?= $csrf() ?>
-            <button type="submit" class="btn btn-outline" style="height: 36px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 600; color: var(--color-danger); border-color: rgba(220, 38, 38, 0.25); display: inline-flex; align-items: center; gap: 0.375rem; border-radius: var(--radius-md);" title="Sign out of PROMIS">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <button type="submit" class="btn btn-outline" 
+                    style="height: 36px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 600; color: var(--color-danger); border-color: rgba(220, 38, 38, 0.25); display: inline-flex; align-items: center; gap: 0.375rem; border-radius: var(--radius-md);" 
+                    title="Sign out of PROMIS"
+                    data-confirm="Are you sure you want to end your active session and sign out of PROMIS?"
+                    data-confirm-title="Sign Out Confirmation"
+                    data-confirm-detail="Any unsaved progress in active forms will be discarded."
+                    data-confirm-type="danger"
+                    data-confirm-btn="Sign Out"
+                    data-confirm-icon="fa-arrow-right-from-bracket">
+                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
                 <span class="mobile-hidden">Sign Out</span>
             </button>
         </form>

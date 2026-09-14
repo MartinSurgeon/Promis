@@ -136,7 +136,13 @@ $statusBadgeClass = match($status) {
                     <form method="POST" action="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>/action" style="margin: 0;">
                         <?= $csrf() ?>
                         <input type="hidden" name="action" value="SUBMIT">
-                        <button type="submit" class="btn btn-primary" style="font-weight: 700; font-size: 0.875rem;" onclick="return confirm('Submit this plan for formal review and approval?');">
+                        <button type="submit" class="btn btn-primary" style="font-weight: 700; font-size: 0.875rem;"
+                                data-confirm="Submit this Annual Procurement Plan for formal institutional review and approval?"
+                                data-confirm-title="Submit Procurement Plan"
+                                data-confirm-detail="Plan items will be locked for review by institutional approvers."
+                                data-confirm-type="primary"
+                                data-confirm-btn="Submit for Approval"
+                                data-confirm-icon="fa-paper-plane">
                             <i class="fa-solid fa-paper-plane"></i> Submit for Approval
                         </button>
                     </form>
@@ -158,7 +164,13 @@ $statusBadgeClass = match($status) {
                     <form method="POST" action="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>/action" style="margin: 0;">
                         <?= $csrf() ?>
                         <input type="hidden" name="action" value="APPROVE">
-                        <button type="submit" class="btn btn-success" style="font-weight: 700; font-size: 0.875rem; background: var(--color-success); border-color: var(--color-success); color: #ffffff;" onclick="return confirm('Formally approve this Annual Procurement Plan? Items will become active for requisition drawdown.');">
+                        <button type="submit" class="btn btn-success" style="font-weight: 700; font-size: 0.875rem; background: var(--color-success); border-color: var(--color-success); color: #ffffff;"
+                                data-confirm="Formally approve this Annual Procurement Plan?"
+                                data-confirm-title="Approve Procurement Plan"
+                                data-confirm-detail="Approved items will become immediately active for departmental requisition drawdown."
+                                data-confirm-type="success"
+                                data-confirm-btn="Approve Plan"
+                                data-confirm-icon="fa-circle-check">
                             <i class="fa-solid fa-circle-check"></i> Approve Procurement Plan
                         </button>
                     </form>

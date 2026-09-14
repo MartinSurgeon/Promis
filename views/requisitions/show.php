@@ -99,13 +99,39 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                                 type="submit" 
                                 class="btn btn-primary" 
                                 style="font-size: 0.875rem; font-weight: 700; min-height: 40px; padding: 0.55rem 1.25rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.15s ease, box-shadow 0.15s ease;"
-                                onclick="return confirm('Do you want to continue with: <?= match($act) {
-                                    'SUBMIT' => 'Send for Review',
-                                    'ENDORSE' => 'Sign & Recommend',
-                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Approve Request' : 'Confirm Budget & Approve'),
-                                    'RECEIVE' => 'Confirm Items Received',
+                                data-confirm="Do you want to continue with <?= match($act) {
+                                    'SUBMIT' => 'submitting this requisition for departmental endorsement',
+                                    'ENDORSE' => 'signing and recommending this requisition for Dean approval',
+                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'approving this requisition for budget commitment' : 'authorizing budget commitment and approving this purchase'),
+                                    'RECEIVE' => 'confirming official physical receipt and delivery of requested items',
                                     default => $act,
-                                } ?>?')"
+                                } ?>?"
+                                data-confirm-title="Confirm <?= match($act) {
+                                    'SUBMIT' => 'Requisition Submission',
+                                    'ENDORSE' => 'Departmental Endorsement',
+                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Deanship Approval' : 'Budget Commitment Authorization'),
+                                    'RECEIVE' => 'Procurement Delivery Receipt',
+                                    default => 'Governance Decision',
+                                } ?>"
+                                data-confirm-detail="This action will be permanently recorded in the official university audit trail."
+                                data-confirm-type="<?= match($act) {
+                                    'APPROVE', 'RECEIVE' => 'success',
+                                    default => 'primary',
+                                } ?>"
+                                data-confirm-btn="<?= match($act) {
+                                    'SUBMIT' => 'Submit Requisition',
+                                    'ENDORSE' => 'Sign & Endorse',
+                                    'APPROVE' => 'Authorize & Approve',
+                                    'RECEIVE' => 'Confirm Delivery',
+                                    default => 'Confirm',
+                                } ?>"
+                                data-confirm-icon="<?= match($act) {
+                                    'SUBMIT' => 'fa-paper-plane',
+                                    'ENDORSE' => 'fa-signature',
+                                    'APPROVE' => 'fa-stamp',
+                                    'RECEIVE' => 'fa-box-check',
+                                    default => 'fa-circle-check',
+                                } ?>"
                             >
                                 <i class="fa-solid <?= match($act) {
                                     'SUBMIT' => 'fa-paper-plane',

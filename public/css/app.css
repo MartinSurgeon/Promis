@@ -1566,3 +1566,166 @@ td, th {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
+/* =========================================================================
+   Universal Modal & Confirmation Dialog System (UI/UX & HCI Compliant)
+   ========================================================================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100001;
+}
+
+.modal-content {
+  position: relative;
+  z-index: 100002;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+  transform: scale(0.94) translateY(12px);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal.active .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  letter-spacing: -0.01em;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--color-muted-text);
+  cursor: pointer;
+  padding: 0.375rem;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  color: var(--color-danger);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  background: var(--color-surface-secondary);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Confirmation Dialog Visual Icons & Badges */
+.confirm-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.confirm-icon-danger {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--color-danger);
+}
+
+.confirm-icon-warning {
+  background: rgba(221, 153, 51, 0.14);
+  color: var(--color-warning);
+}
+
+.confirm-icon-primary {
+  background: rgba(140, 0, 59, 0.1);
+  color: var(--color-primary);
+}
+
+.confirm-icon-success {
+  background: rgba(0, 105, 56, 0.12);
+  color: var(--color-success);
+}
+
+.confirm-icon-info {
+  background: rgba(30, 64, 175, 0.12);
+  color: var(--color-info);
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    max-width: 100%;
+    margin: 0 0.5rem;
+    border-radius: var(--radius-lg);
+  }
+  .modal-header {
+    padding: 1rem 1.25rem;
+  }
+  .modal-body {
+    padding: 1.25rem;
+  }
+  .modal-footer {
+    padding: 0.875rem 1.25rem;
+    flex-direction: column-reverse;
+  }
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
