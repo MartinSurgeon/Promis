@@ -76,4 +76,25 @@ final class UserDTO
             'primary_role' => $this->getPrimaryRole(),
         ];
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'first_name' => $this->firstName,
+            'last_name' => $this->lastName,
+            'full_name' => $this->getFullName(),
+            'phone' => $this->phone,
+            'status' => $this->status,
+            'last_login_at' => $this->lastLoginAt,
+            'created_at' => $this->createdAt,
+            'roles' => $this->roles,
+            'role_ids' => $this->roleIds,
+            'permissions' => $this->permissions,
+            'entity_permissions' => $this->entityPermissions,
+            'primary_role' => $this->getPrimaryRole(),
+        ];
+    }
 }

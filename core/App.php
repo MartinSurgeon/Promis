@@ -159,6 +159,16 @@ final class App
         self::$router->post('/procurement-plans/{id}/action', [\Promis\Src\Presentation\Controller\ProcurementPlanViewController::class, 'handleAction']);
         self::$router->get('/procurement-plans/{id}/print', [\Promis\Src\Presentation\Controller\ProcurementPlanViewController::class, 'print']);
         self::$router->get('/procurement-plans/{id}/versions', [\Promis\Src\Presentation\Controller\ProcurementPlanViewController::class, 'versions']);
+
+        // 7. Administrative User & Entity-Scoped Role Management
+        self::$router->get('/admin/users', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'index']);
+        self::$router->post('/admin/users', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'store']);
+        self::$router->post('/admin/users/{id}/edit', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'update']);
+        self::$router->post('/admin/users/{id}/status', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'toggleStatus']);
+        self::$router->post('/admin/users/{id}/roles', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'assignRole']);
+        self::$router->post('/admin/users/{id}/roles/{assignment_id}/delete', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'revokeRole']);
+        self::$router->post('/admin/users/{id}/roles/{assignment_id}/primary', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'setPrimaryRole']);
+        self::$router->get('/admin/users/{id}/json', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'getUserJson']);
     }
 
     /**

@@ -14,6 +14,7 @@ $suites = [
     'Phase25HardeningTest.php' => 95,
     'RequisitionWebControllerTest.php' => 6,
     'ProcurementPlanWebControllerTest.php' => 24,
+    'AdminUserManagementTest.php' => 10,
 ];
 
 echo "===============================================================\n";

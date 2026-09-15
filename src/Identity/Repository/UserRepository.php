@@ -67,8 +67,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             'password_hash' => $data['password_hash'],
             'first_name' => trim($data['first_name']),
             'last_name' => trim($data['last_name']),
-            'phone' => isset($data['phone']) ? trim($data['phone']) : null,
-            'status' => $data['status'] ?? 'PENDING',
+            'phone' => isset($data['phone']) && $data['phone'] !== '' ? trim($data['phone']) : null,
+            'status' => $data['status'] ?? 'ACTIVE',
             'created_by' => $data['created_by'] ?? null,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
@@ -103,6 +103,143 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             'id' => $id,
             'last_login' => $timestamp ?? date('Y-m-d H:i:s'),
         ]) > 0;
+    }
+
+    public function updateProfile(int $id, array $data, ?int $updatedBy = null): bool
+    {
+        $sets = [
+            '`first_name` = :first_name',
+            '`last_name` = :last_name',
+            '`email` = :email',
+            '`phone` = :phone',
+            '`updated_at` = NOW()',
+        ];
+
+        $params = [
+            'id' => $id,
+            'first_name' => trim($data['first_name']),
+            'last_name' => trim($data['last_name']),
+            'email' => strtolower(trim($data['email'])),
+            'phone' => !empty($data['phone']) ? trim($data['phone']) : null,
+        ];
+
+        if (!empty($data['password_hash'])) {
+            $sets[] = '`password_hash` = :password_hash';
+            $params['password_hash'] = $data['password_hash'];
+        }
+
+        if (!empty($data['status'])) {
+            $sets[] = '`status` = :status';
+            $params['status'] = $data['status'];
+        }
+
+        if ($updatedBy !== null) {
+            $sets[] = '`updated_by` = :updated_by';
+            $params['updated_by'] = $updatedBy;
+        }
+
+        $setSql = implode(', ', $sets);
+        $sql = "UPDATE `users` SET {$setSql} WHERE `id` = :id";
+
+        return $this->execute($sql, $params) > 0;
+    }
+
+    public function findPaginatedUsers(
+        int $page = 1,
+        int $limit = 15,
+        string $search = '',
+        string $roleFilter = '',
+        ?int $entityFilter = null,
+        string $statusFilter = ''
+    ): array {
+        $offset = max(0, ($page - 1) * $limit);
+        [$whereSql, $params] = $this->buildFilterConditions($search, $roleFilter, $entityFilter, $statusFilter);
+
+        $sql = "SELECT DISTINCT u.`id`, u.`username`, u.`email`, u.`first_name`, u.`last_name`, 
+                               u.`phone`, u.`status`, u.`last_login_at`, u.`created_at`, u.`created_by`
+                FROM `users` u
+                LEFT JOIN `user_entity_roles` uer ON uer.`user_id` = u.`id`
+                LEFT JOIN `roles` r ON r.`id` = uer.`role_id`
+                WHERE {$whereSql}
+                ORDER BY u.`id` DESC
+                LIMIT {$limit} OFFSET {$offset}";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countFilteredUsers(
+        string $search = '',
+        string $roleFilter = '',
+        ?int $entityFilter = null,
+        string $statusFilter = ''
+    ): int {
+        [$whereSql, $params] = $this->buildFilterConditions($search, $roleFilter, $entityFilter, $statusFilter);
+
+        $sql = "SELECT COUNT(DISTINCT u.`id`)
+                FROM `users` u
+                LEFT JOIN `user_entity_roles` uer ON uer.`user_id` = u.`id`
+                LEFT JOIN `roles` r ON r.`id` = uer.`role_id`
+                WHERE {$whereSql}";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function getSummaryMetrics(): array
+    {
+        $totalUsers = (int)$this->db->query("SELECT COUNT(*) FROM `users`")->fetchColumn();
+        $activeUsers = (int)$this->db->query("SELECT COUNT(*) FROM `users` WHERE `status` = 'ACTIVE'")->fetchColumn();
+        $pendingUsers = (int)$this->db->query("SELECT COUNT(*) FROM `users` WHERE `status` = 'PENDING'")->fetchColumn();
+        $inactiveUsers = (int)$this->db->query("SELECT COUNT(*) FROM `users` WHERE `status` = 'INACTIVE'")->fetchColumn();
+        $assignedEntitiesCount = (int)$this->db->query("SELECT COUNT(DISTINCT `planning_entity_id`) FROM `user_entity_roles` WHERE `status` = 'ACTIVE'")->fetchColumn();
+        $totalAssignments = (int)$this->db->query("SELECT COUNT(*) FROM `user_entity_roles` WHERE `status` = 'ACTIVE'")->fetchColumn();
+
+        return [
+            'total_users' => $totalUsers,
+            'active_users' => $activeUsers,
+            'pending_users' => $pendingUsers,
+            'inactive_users' => $inactiveUsers,
+            'assigned_entities' => $assignedEntitiesCount,
+            'total_assignments' => $totalAssignments,
+        ];
+    }
+
+    private function buildFilterConditions(
+        string $search,
+        string $roleFilter,
+        ?int $entityFilter,
+        string $statusFilter
+    ): array {
+        $where = ['1=1'];
+        $params = [];
+
+        if ($search !== '') {
+            $where[] = "(u.`first_name` LIKE :search1 OR u.`last_name` LIKE :search2 OR u.`username` LIKE :search3 OR u.`email` LIKE :search4)";
+            $params['search1'] = "%{$search}%";
+            $params['search2'] = "%{$search}%";
+            $params['search3'] = "%{$search}%";
+            $params['search4'] = "%{$search}%";
+        }
+
+        if ($roleFilter !== '') {
+            $where[] = "r.`role_code` = :role_code AND uer.`status` = 'ACTIVE'";
+            $params['role_code'] = $roleFilter;
+        }
+
+        if ($entityFilter !== null && $entityFilter > 0) {
+            $where[] = "uer.`planning_entity_id` = :pe_id AND uer.`status` = 'ACTIVE'";
+            $params['pe_id'] = $entityFilter;
+        }
+
+        if ($statusFilter !== '') {
+            $where[] = "u.`status` = :user_status";
+            $params['user_status'] = $statusFilter;
+        }
+
+        return [implode(' AND ', $where), $params];
     }
 
     /**
