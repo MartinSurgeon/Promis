@@ -169,6 +169,15 @@ final class App
         self::$router->post('/admin/users/{id}/roles/{assignment_id}/delete', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'revokeRole']);
         self::$router->post('/admin/users/{id}/roles/{assignment_id}/primary', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'setPrimaryRole']);
         self::$router->get('/admin/users/{id}/json', [\Promis\Src\Presentation\Controller\AdminUserViewController::class, 'getUserJson']);
+
+        // 8. Hierarchical Planning Entity Management
+        self::$router->get('/admin/entities', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'index']);
+        self::$router->post('/admin/entities', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'store']);
+        self::$router->post('/admin/entities/{id}/edit', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'update']);
+        self::$router->post('/admin/entities/{id}/status', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'toggleStatus']);
+        self::$router->post('/admin/entities/{id}/toggle-status', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'toggleStatus']);
+        self::$router->get('/admin/entities/{id}/json', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'getEntityJson']);
+        self::$router->get('/admin/entities/tree', [\Promis\Src\Presentation\Controller\AdminEntityViewController::class, 'getEntityTreeJson']);
     }
 
     /**

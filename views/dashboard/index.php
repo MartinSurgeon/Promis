@@ -1,6 +1,6 @@
 <?php
 /**
- * Role-Aware Institutional Dashboard View
+ * Role-Based Operational Workflow Dashboard & Approval Queue View
  * PROMIS - Procurement Management Information System
  *
  * @var array $user
@@ -11,11 +11,19 @@
  * @var bool $isFinance
  * @var bool $isProcurement
  * @var bool $isAdmin
- * @var array $metrics
- * @var array $recentRequisitions
- * @var array $budgetSummary
+ * @var array $kpis
+ * @var array $requesterQueues
+ * @var array $hodQueue
+ * @var array $deanQueue
+ * @var array $financeQueue
+ * @var array $procurementQueue
+ * @var array $adminStats
  * @var array $recentAuditLogs
+ * @var array $budgetSummary
+ * @var array $recentRequisitions
+ * @var string $activeTab
  * @var string $appUrl
+ * @var callable $csrf
  * @var callable $e
  */
 
@@ -24,23 +32,33 @@ use Promis\Src\Execution\Domain\RequisitionStatus;
 $userRecord = is_callable($user) ? $user() : ($user ?? []);
 $userFullName = $userRecord['name'] ?? $userRecord['full_name'] ?? $userRecord['username'] ?? 'Colleague';
 
-$pendingWorkload = match(true) {
-    $isHod => (int)($metrics['pending_endorsement'] ?? 0),
-    $isDean => (int)($metrics['pending_approval'] ?? 0),
-    $isFinance => (int)($metrics['pending_commitment'] ?? 0),
-    $isProcurement => (int)($metrics['awaiting_receipt'] ?? 0),
-    $isAdmin => (int)($metrics['submitted'] ?? 0),
-    default => (int)($metrics['my_returned'] ?? 0),
+$primaryRole = match(true) {
+    $isHod => 'HOD',
+    $isDean => 'DEAN',
+    $isFinance => 'FINANCE_OFFICER',
+    $isProcurement => 'PROCUREMENT_OFFICER',
+    $isAdmin => 'ADMIN',
+    $isRequester => 'REQUESTER',
+    default => !empty($roles) ? $roles[0] : 'STAFF'
+};
+
+$pendingWorkload = match($primaryRole) {
+    'HOD' => (int)($kpis['hod']['awaiting'] ?? 0),
+    'DEAN' => (int)($kpis['dean']['awaiting'] ?? 0),
+    'FINANCE_OFFICER' => (int)($kpis['finance']['awaiting'] ?? 0),
+    'PROCUREMENT_OFFICER' => (int)($kpis['procurement']['awaiting'] ?? 0),
+    'ADMIN' => (int)($kpis['admin']['active_workflows'] ?? 0),
+    default => (int)($kpis['requester']['returned'] ?? 0),
 };
 ?>
 
-<!-- Welcome Banner with Core Orientation Triad & Dominant CTA -->
+<!-- 1. Welcome Banner with Operational Focus & Dominant CTA -->
 <div class="card" style="margin-bottom: 2rem; background: var(--gradient-brand); color: #ffffff; border: none; border-radius: var(--radius-lg); padding: 2rem 2.25rem; box-shadow: var(--shadow-md);">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
         <div style="max-width: 680px;">
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
                 <span class="badge" style="background: rgba(255,255,255,0.2); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.625rem; border-radius: 9999px;">
-                    Institutional Procurement Portal
+                    Role-Based Governance Dashboard
                 </span>
                 <span style="font-size: 0.75rem; opacity: 0.85;">•</span>
                 <span style="font-size: 0.75rem; opacity: 0.85; font-weight: 500;">USTED Ghana</span>
@@ -49,21 +67,21 @@ $pendingWorkload = match(true) {
                 Welcome, <?= $e($userFullName) ?>
             </h2>
             <p style="font-size: 0.9375rem; opacity: 0.94; margin: 0; line-height: 1.6;">
-                You are logged in as <strong style="text-decoration: underline; text-underline-offset: 3px;"><?= $e(implode(', ', $roles)) ?></strong>. Track your item requests, approve pending requests, and monitor department spending.
+                Active Operational Role: <strong style="text-decoration: underline; text-underline-offset: 3px;"><?= $e(implode(', ', $roles)) ?></strong>. Review role queues, process pending requisitions, and track compliance.
             </p>
         </div>
 
-        <!-- Dominant Primary CTA & Secondary Action (Hick's Law & Fitts's Law) -->
+        <!-- Dominant Actions -->
         <div style="display: flex; gap: 0.875rem; flex-wrap: wrap; align-items: center;">
-            <a href="<?= $e($appUrl ?? '') ?>/requisitions/create" class="btn" style="background: #22c55e; color: #ffffff; font-weight: 700; font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.35rem; border-radius: var(--radius-md); box-shadow: 0 2px 5px rgba(0,0,0,0.15); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; border: none; transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.15)';">
+            <a href="<?= $e($appUrl ?? '') ?>/requisitions/create" class="btn" style="background: #22c55e; color: #ffffff; font-weight: 700; font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.35rem; border-radius: var(--radius-md); box-shadow: 0 2px 5px rgba(0,0,0,0.15); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; border: none; transition: transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
                 <i class="fa-solid fa-plus"></i>
-                <span>Make a Requisition</span>
+                <span>New Requisition</span>
             </a>
 
             <?php if ($isHod || $isDean || $isFinance || $isProcurement || $isAdmin): ?>
-                <a href="<?= $e($appUrl ?? '') ?>/requisitions?filter=pending" class="btn" style="background: #ffffff; color: var(--color-primary); font-weight: 700; font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.25rem; border-radius: var(--radius-md); box-shadow: 0 2px 5px rgba(0,0,0,0.15); display: inline-flex; align-items: center; gap: 0.625rem; text-decoration: none; transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.15)';">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>Review Pending Queue</span>
+                <a href="#approval-queues" class="btn" style="background: #ffffff; color: var(--color-primary); font-weight: 700; font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.25rem; border-radius: var(--radius-md); box-shadow: 0 2px 5px rgba(0,0,0,0.15); display: inline-flex; align-items: center; gap: 0.625rem; text-decoration: none; transition: transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+                    <i class="fa-solid fa-stamp"></i>
+                    <span>Approval Queues</span>
                     <?php if ($pendingWorkload > 0): ?>
                         <span style="background: var(--color-primary); color: #ffffff; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800;">
                             <?= $pendingWorkload ?>
@@ -71,190 +89,777 @@ $pendingWorkload = match(true) {
                     <?php endif; ?>
                 </a>
             <?php endif; ?>
-            <a href="<?= $e($appUrl ?? '') ?>/procurement-plans" class="btn btn-outline" style="background: rgba(255,255,255,0.18); color: #ffffff; border: 1px solid rgba(255,255,255,0.5); font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.125rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-weight: 600; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
-                <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+
+            <a href="<?= $e($appUrl ?? '') ?>/procurement-plans" class="btn btn-outline" style="background: rgba(255,255,255,0.18); color: #ffffff; border: 1px solid rgba(255,255,255,0.5); font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.125rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-weight: 600;">
+                <i class="fa-solid fa-calendar-check"></i>
                 <span>Annual Plans</span>
-            </a>
-            <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="btn btn-outline" style="background: rgba(255,255,255,0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.4); font-size: 0.9375rem; min-height: 44px; padding: 0.625rem 1.125rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-weight: 600; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
-                <i class="fa-solid fa-list" aria-hidden="true"></i>
-                <span>All Requisitions</span>
             </a>
         </div>
     </div>
 </div>
 
-<!-- Role-Specific Actionable Metrics Cards (Interactive & Tactile) -->
+<!-- 2. Role-Appropriate KPI Cards -->
 <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
-    <?php 
-    $isGovernance = $isHod || $isDean || $isFinance || $isProcurement || $isAdmin;
-    if ($isGovernance): 
-    ?>
-        <!-- Governance & Finance Roles 4-Card Balanced Suite -->
-        <!-- Card 1: Stage Pending Queue Workload -->
-        <a href="<?= $e($appUrl ?? '') ?>/requisitions?filter=pending" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <?php if ($primaryRole === 'HOD'): ?>
+        <!-- HOD KPIs: Awaiting Endorsement, Endorsed, Returned, Rejected -->
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        <?php if ($isHod): ?>Pending Endorsements
-                        <?php elseif ($isDean): ?>Pending Dean Approvals
-                        <?php elseif ($isFinance): ?>Pending Finance Approvals
-                        <?php elseif ($isProcurement): ?>Ready for Goods Delivery
-                        <?php else: ?>Requests Waiting for Review
-                        <?php endif; ?>
-                    </div>
-                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        <?= (int)$pendingWorkload ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Waiting for your action
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Awaiting Endorsement</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['hod']['awaiting'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Department requests to sign</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid <?php if ($isHod): ?>fa-signature<?php elseif ($isDean): ?>fa-stamp<?php elseif ($isFinance): ?>fa-vault<?php elseif ($isProcurement): ?>fa-boxes-packing<?php else: ?>fa-inbox<?php endif; ?>"></i>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-signature"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Endorsed</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['hod']['endorsed'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Recommended to Deanship</div>
                 </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 105, 56, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-warning); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Returned</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-warning); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['hod']['returned'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Returned for correction</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(221, 153, 51, 0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-rotate-left"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-danger); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Rejected</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-danger); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['hod']['rejected'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Declined requisitions</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); color: var(--color-danger); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-ban"></i></div>
             </div>
         </a>
 
-        <!-- Card 2: Total Active Requisitions -->
-        <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-info); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <?php elseif ($primaryRole === 'DEAN'): ?>
+        <!-- DEAN KPIs: Awaiting Approval, Approved, Returned, Rejected -->
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        Total Requisitions
-                    </div>
-                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        <?= (int)($metrics['total_requisitions'] ?? count($recentRequisitions)) ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        All department requests
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Awaiting Approval</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['dean']['awaiting'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Faculty department requests</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(2, 132, 199, 0.1); color: var(--color-info); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-layer-group"></i>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-stamp"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Approved</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['dean']['approved'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Approved for Finance</div>
                 </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 105, 56, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-warning); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Returned</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-warning); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['dean']['returned'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Returned to Department</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(221, 153, 51, 0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-rotate-left"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-danger); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Rejected</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-danger); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['dean']['rejected'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Terminated requests</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); color: var(--color-danger); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-ban"></i></div>
             </div>
         </a>
 
-        <!-- Card 3: Total Committed Expenditures -->
-        <a href="#budget" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <?php elseif ($primaryRole === 'FINANCE_OFFICER'): ?>
+        <!-- FINANCE KPIs: Awaiting Commitment, Committed, Returned, Rejected -->
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        Money Spent or Reserved
-                    </div>
-                    <div style="font-size: 1.375rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        GHS <?= number_format((float)($budgetSummary['total_committed'] ?? 0), 2) ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Approved for university purchases
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Awaiting Commitment</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['finance']['awaiting'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Ready for budget warrant lock</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(5, 131, 23, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-coins"></i>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-vault"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Committed</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['finance']['committed'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Funds encumbered</div>
                 </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 105, 56, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-lock"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-warning); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Returned</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-warning); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['finance']['returned'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Returned to Department</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(221, 153, 51, 0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-rotate-left"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-danger); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Rejected</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-danger); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['finance']['rejected'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Rejected on budget grounds</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); color: var(--color-danger); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-ban"></i></div>
             </div>
         </a>
 
-        <!-- Card 4: Governance Compliance Standard -->
-        <div class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid #2563eb; box-shadow: var(--shadow-sm);">
+    <?php elseif ($primaryRole === 'PROCUREMENT_OFFICER'): ?>
+        <!-- PROCUREMENT KPIs: Awaiting Processing, Processing, Received, Completed -->
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        Procurement Rules
-                    </div>
-                    <div style="font-size: 1.25rem; font-weight: 800; color: #2563eb; margin: 0.35rem 0 0.25rem; line-height: 1.2;">
-                        Ghana PPA
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Public Procurement Authority standard
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Awaiting Processing</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['procurement']['awaiting'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Committed orders ready</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(37, 99, 235, 0.08); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-shield-halved"></i>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-boxes-packing"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-info); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Processing</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-info); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['procurement']['processing'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Under vendor supply</div>
                 </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(2, 132, 199, 0.1); color: var(--color-info); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-truck-ramp-box"></i></div>
+            </div>
+        </a>
+        <a href="#approval-queues" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Received / Done</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['procurement']['received'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Inspected & received</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 105, 56, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-box-check"></i></div>
+            </div>
+        </a>
+        <div class="card" style="background: var(--color-surface); padding: 1.25rem 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid #2563eb; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">PPA Standard</div>
+                    <div style="font-size: 1.25rem; font-weight: 800; color: #2563eb; margin: 0.35rem 0 0.25rem;">Ghana PPA</div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Act 663 / Act 914</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(37, 99, 235, 0.08); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-shield-halved"></i></div>
             </div>
         </div>
+
+    <?php elseif ($primaryRole === 'ADMIN'): ?>
+        <!-- ADMIN KPIs: Total Users, Active Users, Planning Entities, Active Workflows -->
+        <a href="<?= $e($appUrl ?? '') ?>/admin/users" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Total Users</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['admin']['total_users'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Institutional accounts</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-users"></i></div>
+            </div>
+        </a>
+        <a href="<?= $e($appUrl ?? '') ?>/admin/users?status=ACTIVE" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Active Users</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['admin']['active_users'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Operational logins enabled</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 105, 56, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-user-check"></i></div>
+            </div>
+        </a>
+        <a href="<?= $e($appUrl ?? '') ?>/admin/entities" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-info); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Planning Entities</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-info); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['admin']['planning_entities'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Faculties & Departments</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(2, 132, 199, 0.1); color: var(--color-info); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-sitemap"></i></div>
+            </div>
+        </a>
+        <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid #8b5cf6; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Active Workflows</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: #8b5cf6; margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['admin']['active_workflows'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Requisitions in progress</div>
+                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(139, 92, 246, 0.1); color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-diagram-project"></i></div>
+            </div>
+        </a>
+
     <?php else: ?>
-        <!-- Requester Metrics (Generously Padded with Zero Border Collision) -->
-        <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-warning); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <!-- REQUESTER KPIs: Drafts, Submitted, Returned, Completed -->
+        <a href="#workbench-drafts" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-warning); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        My Drafts
-                    </div>
-                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        <?= (int)($metrics['my_drafts'] ?? $metrics['drafts'] ?? 0) ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Saved, not yet submitted
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">My Drafts</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['requester']['drafts'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Saved, not yet submitted</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(221, 153, 51, 0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-file-pen"></i>
-                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(221, 153, 51, 0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-file-pen"></i></div>
             </div>
         </a>
-
-        <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-info); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <a href="#workbench-submitted" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-info); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        In Approval Pipeline
-                    </div>
-                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        <?= (int)($metrics['my_submitted'] ?? $metrics['submitted'] ?? 0) ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Under departmental review
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">In Approval Pipeline</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['requester']['submitted'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Under departmental review</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(2, 132, 199, 0.1); color: var(--color-info); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(2, 132, 199, 0.1); color: var(--color-info); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-paper-plane"></i></div>
             </div>
         </a>
-
-        <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-danger); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <a href="#workbench-returned" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-danger); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        Returned for Revision
-                    </div>
-                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-danger); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        <?= (int)($metrics['my_returned'] ?? $metrics['returned'] ?? 0) ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Action required by you
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Returned for Revision</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-danger); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['requester']['returned'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Action required by you</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); color: var(--color-danger); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(220, 38, 38, 0.1); color: var(--color-danger); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-rotate-left"></i></div>
             </div>
         </a>
-
-        <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <a href="#workbench-completed" class="card" style="display: block; background: var(--color-surface); padding: 1.25rem 1.5rem; text-decoration: none; border-radius: var(--radius-lg); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-sm);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">
-                        Approved & Completed
-                    </div>
-                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums; line-height: 1.2;">
-                        <?= (int)($metrics['completed'] ?? 0) ?>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 500;">
-                        Received by Procurement
-                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.04em;">Completed</div>
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--color-success); margin: 0.35rem 0 0.25rem; font-variant-numeric: tabular-nums;"><?= (int)$kpis['requester']['completed'] ?></div>
+                    <div style="font-size: 0.75rem; color: var(--color-muted-text);">Received & fulfilled</div>
                 </div>
-                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(5, 131, 23, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0;">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 105, 56, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 1.125rem;"><i class="fa-solid fa-circle-check"></i></div>
             </div>
         </a>
     <?php endif; ?>
 </div>
 
-<!-- Institutional Budget Overview Section (Finance / Admin / General Awareness) -->
+<!-- 3. Operational Approval Queues & Multi-Role Switching -->
+<div id="approval-queues" class="card" style="margin-bottom: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
+    
+    <!-- Multi-Role Queue Tabs (For users with multiple governance roles) -->
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--color-border); padding-bottom: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-inbox" style="color: var(--color-primary);"></i>
+                Operational Approval Queues & Worklists
+            </h3>
+            <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0.25rem 0 0;">
+                Role-scoped pipeline tasks governed by strict institutional authorization
+            </p>
+        </div>
+
+        <!-- Role Queue Selector Tabs -->
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <?php if ($isHod): ?>
+                <button type="button" class="btn <?= $activeTab === 'hod' ? 'btn-primary' : 'btn-outline' ?>" onclick="switchRoleQueue('hod')" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <i class="fa-solid fa-signature"></i>
+                    <span>Department Queue (HOD)</span>
+                    <?php if ((int)$kpis['hod']['awaiting'] > 0): ?>
+                        <span style="background: rgba(255,255,255,0.3); padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 800; font-size: 0.6875rem;"><?= (int)$kpis['hod']['awaiting'] ?></span>
+                    <?php endif; ?>
+                </button>
+            <?php endif; ?>
+
+            <?php if ($isDean): ?>
+                <button type="button" class="btn <?= $activeTab === 'dean' ? 'btn-primary' : 'btn-outline' ?>" onclick="switchRoleQueue('dean')" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <i class="fa-solid fa-stamp"></i>
+                    <span>Faculty Queue (Dean)</span>
+                    <?php if ((int)$kpis['dean']['awaiting'] > 0): ?>
+                        <span style="background: rgba(255,255,255,0.3); padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 800; font-size: 0.6875rem;"><?= (int)$kpis['dean']['awaiting'] ?></span>
+                    <?php endif; ?>
+                </button>
+            <?php endif; ?>
+
+            <?php if ($isFinance): ?>
+                <button type="button" class="btn <?= $activeTab === 'finance' ? 'btn-primary' : 'btn-outline' ?>" onclick="switchRoleQueue('finance')" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <i class="fa-solid fa-vault"></i>
+                    <span>Finance Commitment</span>
+                    <?php if ((int)$kpis['finance']['awaiting'] > 0): ?>
+                        <span style="background: rgba(255,255,255,0.3); padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 800; font-size: 0.6875rem;"><?= (int)$kpis['finance']['awaiting'] ?></span>
+                    <?php endif; ?>
+                </button>
+            <?php endif; ?>
+
+            <?php if ($isProcurement): ?>
+                <button type="button" class="btn <?= $activeTab === 'procurement' ? 'btn-primary' : 'btn-outline' ?>" onclick="switchRoleQueue('procurement')" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <i class="fa-solid fa-boxes-packing"></i>
+                    <span>Procurement Orders</span>
+                    <?php if ((int)$kpis['procurement']['awaiting'] > 0): ?>
+                        <span style="background: rgba(255,255,255,0.3); padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 800; font-size: 0.6875rem;"><?= (int)$kpis['procurement']['awaiting'] ?></span>
+                    <?php endif; ?>
+                </button>
+            <?php endif; ?>
+
+            <?php if ($isRequester || empty($roles)): ?>
+                <button type="button" class="btn <?= $activeTab === 'requester' ? 'btn-primary' : 'btn-outline' ?>" onclick="switchRoleQueue('requester')" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <i class="fa-solid fa-user"></i>
+                    <span>My Requisitions</span>
+                </button>
+            <?php endif; ?>
+
+            <?php if ($isAdmin): ?>
+                <button type="button" class="btn <?= $activeTab === 'admin' ? 'btn-primary' : 'btn-outline' ?>" onclick="switchRoleQueue('admin')" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Administration</span>
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- TAB 1: HOD DEPARTMENT APPROVAL QUEUE -->
+    <?php if ($isHod): ?>
+        <div id="queue-panel-hod" class="role-queue-panel" style="display: <?= $activeTab === 'hod' ? 'block' : 'none' ?>;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
+                    Department Approval Queue (Awaiting HOD Endorsement)
+                </h4>
+                <span class="badge badge-info" style="font-size: 0.75rem;">Scoped to Authorized Department</span>
+            </div>
+
+            <?php $hodAwaiting = $hodQueue['awaiting'] ?? []; ?>
+            <?php if (empty($hodAwaiting)): ?>
+                <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center; background: var(--color-surface-secondary); border-radius: var(--radius-md);">
+                    <div style="font-size: 2rem; color: var(--color-success); margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-check"></i></div>
+                    <div style="font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">Department Approval Queue Clear</div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted-text);">No submitted requisitions are currently awaiting HOD endorsement in your department scope.</div>
+                </div>
+            <?php else: ?>
+                <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+                        <thead>
+                            <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requisition #</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requester</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Department</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Description</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Amount</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Submitted Date</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Stage</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($hodAwaiting as $r): ?>
+                                <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700;">
+                                        <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" style="color: var(--color-primary); text-decoration: none;">
+                                            <?= $e($r['requisition_number']) ?>
+                                        </a>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-text); font-weight: 500;"><?= $e($r['requester_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-muted-text);"><?= $e($r['department_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?= $e($r['justification']) ?>">
+                                        <?= $e($r['justification']) ?>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-text);">GHS <?= number_format((float)$r['total_estimated_cost'], 2) ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-muted-text);"><?= $e(date('M d, Y', strtotime($r['created_at']))) ?></td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-info" style="font-size: 0.6875rem; font-weight: 700;">Awaiting Endorsement</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
+                                        <div style="display: inline-flex; gap: 0.35rem;">
+                                            <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Review full details">
+                                                Review
+                                            </a>
+                                            <form method="POST" action="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>/action" style="margin:0; display:inline;">
+                                                <?= $csrf() ?>
+                                                <input type="hidden" name="action" value="ENDORSE">
+                                                <button type="submit" class="btn btn-primary" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Sign and Endorse">
+                                                    Endorse
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--color-warning); border-color: rgba(221,153,51,0.5);" onclick="openActionModal('RETURN', '<?= (int)$r['id'] ?>', '<?= $e($r['requisition_number']) ?>')">
+                                                Return
+                                            </button>
+                                            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--color-danger); border-color: rgba(220,38,38,0.4);" onclick="openActionModal('REJECT', '<?= (int)$r['id'] ?>', '<?= $e($r['requisition_number']) ?>')">
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- TAB 2: DEAN FACULTY APPROVAL QUEUE -->
+    <?php if ($isDean): ?>
+        <div id="queue-panel-dean" class="role-queue-panel" style="display: <?= $activeTab === 'dean' ? 'block' : 'none' ?>;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
+                    Faculty Approval Queue (Awaiting Dean Approval)
+                </h4>
+                <span class="badge badge-info" style="font-size: 0.75rem;">Scoped to Faculty & Child Departments (Closure Table)</span>
+            </div>
+
+            <?php $deanAwaiting = $deanQueue['awaiting'] ?? []; ?>
+            <?php if (empty($deanAwaiting)): ?>
+                <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center; background: var(--color-surface-secondary); border-radius: var(--radius-md);">
+                    <div style="font-size: 2rem; color: var(--color-success); margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-check"></i></div>
+                    <div style="font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">Faculty Approval Queue Clear</div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted-text);">No endorsed departmental requests are currently awaiting Dean approval in your faculty jurisdiction.</div>
+                </div>
+            <?php else: ?>
+                <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+                        <thead>
+                            <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requisition #</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Department</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Faculty</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requester</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">HOD Status</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Amount</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Stage</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($deanAwaiting as $r): ?>
+                                <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700;">
+                                        <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" style="color: var(--color-primary); text-decoration: none;">
+                                            <?= $e($r['requisition_number']) ?>
+                                        </a>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 600; color: var(--color-text);"><?= $e($r['department_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-muted-text);"><?= $e($r['faculty_name'] ?? 'Faculty Unit') ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-text);"><?= $e($r['requester_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-success" style="font-size: 0.6875rem; font-weight: 700;">✓ Endorsed</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-text);">GHS <?= number_format((float)$r['total_estimated_cost'], 2) ?></td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-info" style="font-size: 0.6875rem; font-weight: 700;">Awaiting Dean Approval</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
+                                        <div style="display: inline-flex; gap: 0.35rem;">
+                                            <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Review full details">
+                                                Review
+                                            </a>
+                                            <form method="POST" action="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>/action" style="margin:0; display:inline;">
+                                                <?= $csrf() ?>
+                                                <input type="hidden" name="action" value="APPROVE">
+                                                <button type="submit" class="btn btn-primary" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Authorize Dean Approval">
+                                                    Approve
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--color-warning); border-color: rgba(221,153,51,0.5);" onclick="openActionModal('RETURN', '<?= (int)$r['id'] ?>', '<?= $e($r['requisition_number']) ?>')">
+                                                Return
+                                            </button>
+                                            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--color-danger); border-color: rgba(220,38,38,0.4);" onclick="openActionModal('REJECT', '<?= (int)$r['id'] ?>', '<?= $e($r['requisition_number']) ?>')">
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- TAB 3: FINANCE COMMITMENT QUEUE -->
+    <?php if ($isFinance): ?>
+        <div id="queue-panel-finance" class="role-queue-panel" style="display: <?= $activeTab === 'finance' ? 'block' : 'none' ?>;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
+                    Finance Commitment Queue (Awaiting Budget Commitment)
+                </h4>
+                <span class="badge badge-info" style="font-size: 0.75rem;">Statutory Commitment Authorization (PFMA Act 921)</span>
+            </div>
+
+            <?php $finAwaiting = $financeQueue['awaiting'] ?? []; ?>
+            <?php if (empty($finAwaiting)): ?>
+                <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center; background: var(--color-surface-secondary); border-radius: var(--radius-md);">
+                    <div style="font-size: 2rem; color: var(--color-success); margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-check"></i></div>
+                    <div style="font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">Finance Commitment Queue Clear</div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted-text);">No Dean-approved requisitions are currently waiting for Finance commitment authorization.</div>
+                </div>
+            <?php else: ?>
+                <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+                        <thead>
+                            <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requisition #</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Department</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Faculty</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requester</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Approved Amount</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Dean Status</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Stage</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($finAwaiting as $r): ?>
+                                <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700;">
+                                        <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" style="color: var(--color-primary); text-decoration: none;">
+                                            <?= $e($r['requisition_number']) ?>
+                                        </a>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 600; color: var(--color-text);"><?= $e($r['department_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-muted-text);"><?= $e($r['faculty_name'] ?? 'Faculty Unit') ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-text);"><?= $e($r['requester_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-success); font-size: 0.875rem;">GHS <?= number_format((float)$r['total_estimated_cost'], 2) ?></td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-success" style="font-size: 0.6875rem; font-weight: 700;">✓ Approved</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-primary" style="font-size: 0.6875rem; font-weight: 700;">Awaiting Finance Lock</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
+                                        <div style="display: inline-flex; gap: 0.35rem;">
+                                            <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Review full details">
+                                                Review
+                                            </a>
+                                            <form method="POST" action="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>/action" style="margin:0; display:inline;">
+                                                <?= $csrf() ?>
+                                                <input type="hidden" name="action" value="APPROVE">
+                                                <button type="submit" class="btn btn-primary" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Authorize Budget Commitment">
+                                                    Commit
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--color-warning); border-color: rgba(221,153,51,0.5);" onclick="openActionModal('RETURN', '<?= (int)$r['id'] ?>', '<?= $e($r['requisition_number']) ?>')">
+                                                Return
+                                            </button>
+                                            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--color-danger); border-color: rgba(220,38,38,0.4);" onclick="openActionModal('REJECT', '<?= (int)$r['id'] ?>', '<?= $e($r['requisition_number']) ?>')">
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- TAB 4: PROCUREMENT QUEUE -->
+    <?php if ($isProcurement): ?>
+        <div id="queue-panel-procurement" class="role-queue-panel" style="display: <?= $activeTab === 'procurement' ? 'block' : 'none' ?>;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
+                    Procurement Receiving Queue (Committed Orders)
+                </h4>
+                <span class="badge badge-info" style="font-size: 0.75rem;">Procurement Fulfillment & Stores Receipt</span>
+            </div>
+
+            <?php $procAwaiting = $procurementQueue['awaiting'] ?? []; ?>
+            <?php if (empty($procAwaiting)): ?>
+                <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center; background: var(--color-surface-secondary); border-radius: var(--radius-md);">
+                    <div style="font-size: 2rem; color: var(--color-success); margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-check"></i></div>
+                    <div style="font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">Procurement Queue Clear</div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted-text);">No committed requisitions are currently waiting for procurement delivery confirmation.</div>
+                </div>
+            <?php else: ?>
+                <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+                        <thead>
+                            <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requisition #</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Department</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Faculty</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Approved Amount</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Finance Commitment</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Procurement Status</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($procAwaiting as $r): ?>
+                                <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700;">
+                                        <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" style="color: var(--color-primary); text-decoration: none;">
+                                            <?= $e($r['requisition_number']) ?>
+                                        </a>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 600; color: var(--color-text);"><?= $e($r['department_name']) ?></td>
+                                    <td style="padding: 0.875rem 1rem; color: var(--color-muted-text);"><?= $e($r['faculty_name'] ?? 'Faculty Unit') ?></td>
+                                    <td style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-text);">GHS <?= number_format((float)$r['total_estimated_cost'], 2) ?></td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-success" style="font-size: 0.6875rem; font-weight: 700;">✓ Committed</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem;">
+                                        <span class="badge badge-primary" style="font-size: 0.6875rem; font-weight: 700;">Awaiting Receipt</span>
+                                    </td>
+                                    <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
+                                        <div style="display: inline-flex; gap: 0.35rem;">
+                                            <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Review full details">
+                                                Review
+                                            </a>
+                                            <form method="POST" action="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>/action" style="margin:0; display:inline;">
+                                                <?= $csrf() ?>
+                                                <input type="hidden" name="action" value="RECEIVE">
+                                                <button type="submit" class="btn btn-primary" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;" title="Confirm Goods Delivered & Received">
+                                                    Receive
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- TAB 5: REQUESTER WORKBENCH (Drafts, Submitted, Returned, Rejected, Completed) -->
+    <div id="queue-panel-requester" class="role-queue-panel" style="display: <?= $activeTab === 'requester' ? 'block' : 'none' ?>;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
+                My Requisitions Workbench
+            </h4>
+            <a href="<?= $e($appUrl ?? '') ?>/requisitions/create" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.75rem;">
+                <i class="fa-solid fa-plus" style="margin-right: 0.25rem;"></i> New Requisition
+            </a>
+        </div>
+
+        <?php $reqRecent = $requesterQueues['recent'] ?? []; ?>
+        <?php if (empty($reqRecent)): ?>
+            <div class="empty-state" style="padding: 2.5rem 1rem; text-align: center; background: var(--color-surface-secondary); border-radius: var(--radius-md);">
+                <div style="font-size: 2rem; color: var(--color-muted-text); margin-bottom: 0.5rem;"><i class="fa-solid fa-folder-open"></i></div>
+                <div style="font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">No Requisitions Created Yet</div>
+                <div style="font-size: 0.8125rem; color: var(--color-muted-text); margin-bottom: 1rem;">You have not authored any procurement requisitions yet.</div>
+                <a href="<?= $e($appUrl ?? '') ?>/requisitions/create" class="btn btn-primary" style="font-size: 0.8125rem;">
+                    Create Your First Requisition
+                </a>
+            </div>
+        <?php else: ?>
+            <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+                    <thead>
+                        <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Requisition #</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Description</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Department</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Amount</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Status</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Date Submitted</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Last Updated</th>
+                            <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($reqRecent as $r): ?>
+                            <?php $rStat = RequisitionStatus::tryFrom((string)$r['status']); ?>
+                            <tr style="border-bottom: 1px solid var(--color-border-subtle);">
+                                <td style="padding: 0.875rem 1rem; font-weight: 700;">
+                                    <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" style="color: var(--color-primary); text-decoration: none;">
+                                        <?= $e($r['requisition_number']) ?>
+                                    </a>
+                                </td>
+                                <td style="padding: 0.875rem 1rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?= $e($r['justification']) ?>">
+                                    <?= $e($r['justification']) ?>
+                                </td>
+                                <td style="padding: 0.875rem 1rem; color: var(--color-text);"><?= $e($r['department_name']) ?></td>
+                                <td style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-text);">GHS <?= number_format((float)$r['total_estimated_cost'], 2) ?></td>
+                                <td style="padding: 0.875rem 1rem;">
+                                    <span class="badge badge-<?= $rStat ? $rStat->badgeClass() : strtolower((string)$r['status']) ?>" style="font-size: 0.6875rem; font-weight: 700;">
+                                        <?= $e($rStat ? $rStat->title() : (string)$r['status']) ?>
+                                    </span>
+                                </td>
+                                <td style="padding: 0.875rem 1rem; color: var(--color-muted-text); font-size: 0.75rem;">
+                                    <?= !empty($r['submitted_at']) ? $e(date('M d, Y', strtotime($r['submitted_at']))) : '—' ?>
+                                </td>
+                                <td style="padding: 0.875rem 1rem; color: var(--color-muted-text); font-size: 0.75rem;">
+                                    <?= $e(date('M d, Y', strtotime($r['updated_at'] ?? $r['created_at']))) ?>
+                                </td>
+                                <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
+                                    <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;">
+                                        Review
+                                    </a>
+                                    <?php if ($r['status'] === 'DRAFT' || $r['status'] === 'RETURNED'): ?>
+                                        <form method="POST" action="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>/action" style="margin:0; display:inline;">
+                                            <?= $csrf() ?>
+                                            <input type="hidden" name="action" value="SUBMIT">
+                                            <button type="submit" class="btn btn-primary" style="padding: 0.35rem 0.625rem; font-size: 0.75rem;">
+                                                Submit
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- TAB 6: ADMIN ADMINISTRATIVE OVERSIGHT -->
+    <?php if ($isAdmin): ?>
+        <div id="queue-panel-admin" class="role-queue-panel" style="display: <?= $activeTab === 'admin' ? 'block' : 'none' ?>;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
+                    Administrative Governance & Entity Management Overview
+                </h4>
+                <span class="badge badge-warning" style="font-size: 0.75rem;">Administrative Oversight (Separated from Workflow Approval)</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                <div style="background: var(--color-surface-secondary); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                    <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">
+                        <i class="fa-solid fa-users-gear" style="color: var(--color-primary); margin-right: 0.35rem;"></i> User & Role Management
+                    </div>
+                    <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem;">Manage university staff accounts, activate logins, and assign role-entity scopes.</p>
+                    <a href="<?= $e($appUrl ?? '') ?>/admin/users" class="btn btn-primary" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem;">
+                        Open User Directory
+                    </a>
+                </div>
+
+                <div style="background: var(--color-surface-secondary); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                    <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">
+                        <i class="fa-solid fa-sitemap" style="color: var(--color-primary); margin-right: 0.35rem;"></i> Hierarchical Planning Entities
+                    </div>
+                    <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem;">Configure University → Faculty → Department tree hierarchies and closure tables.</p>
+                    <a href="<?= $e($appUrl ?? '') ?>/admin/entities" class="btn btn-primary" style="font-size: 0.8125rem; padding: 0.4rem 0.875rem;">
+                        Open Entity Management
+                    </a>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- 4. Institutional Budget Overview Section -->
 <div id="budget" class="card" style="margin-bottom: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
         <div>
@@ -270,246 +875,68 @@ $pendingWorkload = match(true) {
         </div>
         <div>
             <span class="badge badge-<?= $budgetSummary['has_live_data'] ? 'success' : 'info' ?>" style="font-size: 0.75rem; font-weight: 600; padding: 0.375rem 0.75rem; border-radius: 9999px;">
-                <?= $budgetSummary['has_live_data'] ? '● Live database-backed metrics refreshed on page load' : '○ Standby State (0.00 GHS)' ?>
+                <?= $budgetSummary['has_live_data'] ? '● Live database-backed metrics' : '○ Standby State (0.00 GHS)' ?>
             </span>
         </div>
     </div>
 
-    <!-- Gestalt Similarity: Consistent, Structured Metric Cards -->
     <div class="budget-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
-        <!-- Total Budget Card -->
-        <div style="background: var(--color-surface-secondary); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); border-left: 4px solid #64748b; box-shadow: var(--shadow-xs);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">
-                    Total Allocated Budget
-                </div>
-                <span style="color: #64748b; font-size: 1rem;">
-                    <i class="fa-solid fa-landmark"></i>
-                </span>
-            </div>
-            <div style="font-size: 1.625rem; font-weight: 800; color: var(--color-text); margin: 0.25rem 0 0.5rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;">
+        <div style="background: var(--color-surface-secondary); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); border-left: 4px solid #64748b;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Total Allocated Budget</div>
+            <div style="font-size: 1.625rem; font-weight: 800; color: var(--color-text); margin: 0.25rem 0 0.5rem; font-variant-numeric: tabular-nums;">
                 GHS <?= number_format((float)$budgetSummary['total_allocated'], 2) ?>
             </div>
-            <div style="font-size: 0.75rem; color: var(--color-muted-text); line-height: 1.4;">
-                Approved institutional ceiling across active planning entities
-            </div>
+            <div style="font-size: 0.75rem; color: var(--color-muted-text);">Approved institutional ceiling across active entities</div>
         </div>
 
-        <!-- Committed Expenditures Card -->
-        <div style="background: var(--color-surface-secondary); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); box-shadow: var(--shadow-xs);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em;">
-                    Committed Expenditures
-                </div>
-                <span style="color: var(--color-primary); font-size: 1rem;">
-                    <i class="fa-solid fa-lock"></i>
-                </span>
-            </div>
-            <div style="font-size: 1.625rem; font-weight: 800; color: var(--color-primary); margin: 0.25rem 0 0.5rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;">
+        <div style="background: var(--color-surface-secondary); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary);">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase;">Committed Expenditures</div>
+            <div style="font-size: 1.625rem; font-weight: 800; color: var(--color-primary); margin: 0.25rem 0 0.5rem; font-variant-numeric: tabular-nums;">
                 GHS <?= number_format((float)$budgetSummary['total_committed'], 2) ?>
             </div>
-            <div style="font-size: 0.75rem; color: var(--color-muted-text); line-height: 1.4;">
-                Formally locked via Finance commitment authorizations
-            </div>
+            <div style="font-size: 0.75rem; color: var(--color-muted-text);">Formally locked via Finance commitments</div>
         </div>
 
-        <!-- Remaining Available Balance Card -->
-        <div style="background: var(--color-surface-secondary); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success); box-shadow: var(--shadow-xs);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-success); text-transform: uppercase; letter-spacing: 0.05em;">
-                    Remaining Available Balance
-                </div>
-                <span style="color: var(--color-success); font-size: 1rem;">
-                    <i class="fa-solid fa-wallet"></i>
-                </span>
-            </div>
-            <div style="font-size: 1.625rem; font-weight: 800; color: var(--color-success); margin: 0.25rem 0 0.5rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;">
+        <div style="background: var(--color-surface-secondary); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); border-left: 4px solid var(--color-success);">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-success); text-transform: uppercase;">Remaining Available Balance</div>
+            <div style="font-size: 1.625rem; font-weight: 800; color: var(--color-success); margin: 0.25rem 0 0.5rem; font-variant-numeric: tabular-nums;">
                 GHS <?= number_format((float)$budgetSummary['available_balance'], 2) ?>
             </div>
-            <div style="font-size: 0.75rem; color: var(--color-muted-text); line-height: 1.4;">
-                Unencumbered funds available for new requisitions
-            </div>
-        </div>
-    </div>
-
-    <!-- Budget Utilization Progress Bar with Generous Breathing Room -->
-    <?php 
-    $totalAlloc = (float)($budgetSummary['total_allocated'] ?? 0);
-    $totalComm = (float)($budgetSummary['total_committed'] ?? 0);
-    $utilPct = $totalAlloc > 0 ? min(100, round(($totalComm / $totalAlloc) * 100, 1)) : 0;
-    ?>
-    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.5rem;">
-            <span style="display: flex; align-items: center; gap: 0.375rem;">
-                <i class="fa-solid fa-chart-line" style="color: var(--color-muted-text);"></i>
-                Institutional Budget Utilization Rate
-            </span>
-            <span style="font-weight: 700; color: var(--color-primary); font-variant-numeric: tabular-nums; background: rgba(140, 0, 59, 0.08); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);">
-                <?= $utilPct ?>% Committed
-            </span>
-        </div>
-        <div style="height: 12px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; padding: 2px;">
-            <div style="height: 100%; width: <?= $utilPct ?>%; background: <?= $utilPct > 90 ? 'var(--color-danger)' : ($utilPct > 70 ? 'var(--color-warning)' : 'var(--color-primary)') ?>; border-radius: 9999px; transition: width 0.3s ease;"></div>
-        </div>
-        <div style="font-size: 0.75rem; color: var(--color-muted-text); margin-top: 0.625rem;">
-            Budget allocations are formally appropriated under the Public Financial Management Act (PFMA Act 921) and statutory warrants.
+            <div style="font-size: 0.75rem; color: var(--color-muted-text);">Unencumbered funds available for requisitions</div>
         </div>
     </div>
 </div>
 
-<!-- Recent Requisitions Table / Workbench Activity -->
-<div class="card" style="margin-bottom: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
-        <div>
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i>
-                Recent Requisition Activity
-            </h3>
-            <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0.25rem 0 0;">
-                Real-time tracking of procurement requests across university departments
-            </p>
-        </div>
-        <div>
-            <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="btn btn-outline" style="font-size: 0.8125rem; padding: 0.45rem 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; border-radius: var(--radius-md);">
-                <span>View All Requisitions</span>
-                <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i>
-            </a>
-        </div>
-    </div>
-
-    <?php if (empty($recentRequisitions)): ?>
-        <div class="empty-state" style="padding: 3rem 1rem; text-align: center;">
-            <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--color-surface-secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--color-muted-text); font-size: 1.5rem;">
-                <i class="fa-solid fa-folder-open"></i>
-            </div>
-            <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.375rem;">
-                No Requisitions Recorded Yet
-            </h4>
-            <p style="font-size: 0.8125rem; color: var(--color-muted-text); max-width: 450px; margin: 0 auto 1.25rem;">
-                Your departmental requisition workbench is ready. When requisitions are created against approved procurement plans, they will appear here.
-            </p>
-            <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="btn btn-primary" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                <i class="fa-solid fa-list" style="margin-right: 0.375rem;"></i> Requisition Explorer
-            </a>
-        </div>
-    <?php else: ?>
-        <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
-            <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-                <thead>
-                    <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Requisition #</th>
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Planning Entity</th>
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Requester</th>
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Estimated Cost</th>
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Created Date</th>
-                        <th style="padding: 0.875rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($recentRequisitions as $req): ?>
-                        <tr style="border-bottom: 1px solid var(--color-border-subtle); transition: background-color 0.15s ease;">
-                            <!-- Linkified Requisition Number -->
-                            <td style="padding: 1rem; vertical-align: middle;">
-                                <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$req['id'] ?>" style="font-weight: 700; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.375rem;" title="View requisition details">
-                                    <span><?= $e($req['requisition_number']) ?></span>
-                                </a>
-                            </td>
-                            <td style="padding: 1rem; vertical-align: middle; color: var(--color-text); font-weight: 600;">
-                                <?= $e($req['entity_name']) ?>
-                            </td>
-                            <td style="padding: 1rem; vertical-align: middle; color: var(--color-muted-text);">
-                                <?= $e($req['requester_name']) ?>
-                            </td>
-                            <td style="padding: 1rem; vertical-align: middle; font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums;">
-                                GHS <?= number_format((float)$req['total_estimated_cost'], 2) ?>
-                            </td>
-                            <!-- Two-Line Status Badge -->
-                            <td style="padding: 1rem; vertical-align: middle;">
-                                <?php $rStatus = RequisitionStatus::tryFrom((string)$req['status']); ?>
-                                <div style="display: inline-flex; flex-direction: column; gap: 0.2rem;">
-                                    <span class="badge badge-<?= $rStatus ? $rStatus->badgeClass() : strtolower((string)$req['status']) ?>" style="font-size: 0.75rem; font-weight: 700; width: fit-content; padding: 0.25rem 0.625rem; border-radius: 9999px;">
-                                        <?= $e($rStatus ? $rStatus->title() : (string)$req['status']) ?>
-                                    </span>
-                                    <?php if ($rStatus): ?>
-                                        <span style="font-size: 0.6875rem; color: var(--color-muted-text); font-weight: 500; margin-left: 0.125rem;">
-                                            <?= $e($rStatus->sublabel()) ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                            <td style="padding: 1rem; vertical-align: middle; color: var(--color-muted-text); font-size: 0.8125rem; white-space: nowrap;">
-                                <?= $e(date('M d, Y', strtotime($req['created_at']))) ?>
-                            </td>
-                            <td style="padding: 1rem; vertical-align: middle; text-align: right; white-space: nowrap;">
-                                <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$req['id'] ?>" class="btn btn-outline" style="padding: 0.45rem 0.875rem; font-size: 0.8125rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.375rem; border-color: var(--color-border); color: var(--color-primary); border-radius: var(--radius-md); transition: all 0.15s ease;" title="Review requisition">
-                                    <span>Review</span>
-                                    <i class="fa-solid fa-chevron-right" style="font-size: 0.6875rem;"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    <?php endif; ?>
-</div>
-
+<!-- 5. Admin Immutable Audit Trail -->
 <?php if ($isAdmin && !empty($recentAuditLogs)): ?>
-    <?php
-    $formatAuditAction = function(string $action): array {
-        return match($action) {
-            'AUTH_LOGIN_SUCCESS' => ['label' => 'Sign In Success', 'badge' => 'badge-success', 'icon' => 'fa-right-to-bracket'],
-            'AUTH_LOGIN_FAILED' => ['label' => 'Sign In Failed', 'badge' => 'badge-danger', 'icon' => 'fa-triangle-exclamation'],
-            'AUTH_LOGOUT' => ['label' => 'Signed Out', 'badge' => 'badge-info', 'icon' => 'fa-arrow-right-from-bracket'],
-            'AUTH_ACTIVATE' => ['label' => 'Account Activated', 'badge' => 'badge-success', 'icon' => 'fa-user-check'],
-            'WORKFLOW_SUBMIT' => ['label' => 'Submitted', 'badge' => 'badge-info', 'icon' => 'fa-paper-plane'],
-            'WORKFLOW_ENDORSE' => ['label' => 'HOD Endorsement', 'badge' => 'badge-info', 'icon' => 'fa-signature'],
-            'WORKFLOW_APPROVE' => ['label' => 'Dean Approval', 'badge' => 'badge-success', 'icon' => 'fa-circle-check'],
-            'WORKFLOW_COMMIT' => ['label' => 'Finance Commitment', 'badge' => 'badge-success', 'icon' => 'fa-vault'],
-            'WORKFLOW_RECEIVE' => ['label' => 'Procurement Receipt', 'badge' => 'badge-primary', 'icon' => 'fa-boxes-packing'],
-            'WORKFLOW_RETURN' => ['label' => 'Returned for Revision', 'badge' => 'badge-warning', 'icon' => 'fa-rotate-left'],
-            'WORKFLOW_REJECT' => ['label' => 'Requisition Terminated', 'badge' => 'badge-danger', 'icon' => 'fa-ban'],
-            default => ['label' => ucwords(strtolower(str_replace('_', ' ', $action))), 'badge' => 'badge-info', 'icon' => 'fa-clipboard-check'],
-        };
-    };
-    ?>
-    <!-- Admin Read-Only Institutional Audit History -->
     <div id="audit" class="card" style="margin-bottom: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
             <div>
                 <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.625rem;">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-md); background: rgba(140, 0, 59, 0.1); color: var(--color-primary); font-size: 1rem;">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </span>
+                    <i class="fa-solid fa-shield-halved" style="color: var(--color-primary);"></i>
                     Read-Only Institutional Audit Log
                 </h3>
                 <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0.25rem 0 0;">
-                    Immutable system action history (Read-only security compliance under statutory standards)
+                    Immutable action trail complying with statutory audit standards
                 </p>
             </div>
-            <div>
-                <span class="badge badge-success" style="font-size: 0.75rem; font-weight: 600; padding: 0.375rem 0.75rem; border-radius: 9999px;">
-                    <i class="fa-solid fa-lock" style="margin-right: 0.25rem;"></i> Immutable Trail
-                </span>
-            </div>
+            <span class="badge badge-success" style="font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-lock"></i> Immutable Trail</span>
         </div>
 
         <div class="table-container" style="overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
             <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
                 <thead>
                     <tr style="background: var(--color-surface-secondary); border-bottom: 2px solid var(--color-border); text-align: left;">
-                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Timestamp</th>
-                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Actor</th>
-                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Action Recorded</th>
-                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Record Target</th>
-                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Origin IP</th>
+                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Timestamp</th>
+                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Actor</th>
+                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Action</th>
+                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Target</th>
+                        <th style="padding: 0.75rem 1rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">Origin IP</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($recentAuditLogs as $log): ?>
-                        <?php $actMeta = $formatAuditAction($log['action']); ?>
-                        <tr style="border-bottom: 1px solid var(--color-border-subtle); transition: background-color 0.15s ease;">
+                        <tr style="border-bottom: 1px solid var(--color-border-subtle);">
                             <td style="padding: 0.875rem 1rem; color: var(--color-text); font-weight: 500; white-space: nowrap;">
                                 <?= $e(date('M d, Y • h:i A', strtotime($log['event_timestamp']))) ?>
                             </td>
@@ -517,15 +944,13 @@ $pendingWorkload = match(true) {
                                 <?= $e($log['full_name'] ?? $log['username'] ?? 'System') ?>
                             </td>
                             <td style="padding: 0.875rem 1rem;">
-                                <span class="badge <?= $actMeta['badge'] ?>" style="font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.625rem; border-radius: 9999px;">
-                                    <i class="fa-solid <?= $actMeta['icon'] ?>"></i>
-                                    <span><?= $e($actMeta['label']) ?></span>
+                                <span class="badge badge-info" style="font-size: 0.75rem; font-weight: 600;">
+                                    <?= $e($log['action']) ?>
                                 </span>
                             </td>
                             <td style="padding: 0.875rem 1rem;">
-                                <span style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; background: var(--color-surface-secondary); border: 1px solid var(--color-border); padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-weight: 500;">
-                                    <span style="color: var(--color-muted-text); text-transform: capitalize;"><?= $e($log['record_type']) ?></span>
-                                    <span style="font-weight: 700; color: var(--color-primary);">#<?= (int)$log['record_id'] ?></span>
+                                <span style="font-size: 0.75rem; background: var(--color-surface-secondary); border: 1px solid var(--color-border); padding: 0.2rem 0.4rem; border-radius: var(--radius-sm);">
+                                    <?= $e($log['record_type']) ?> #<?= (int)$log['record_id'] ?>
                                 </span>
                             </td>
                             <td style="padding: 0.875rem 1rem; color: var(--color-muted-text); font-family: monospace; font-size: 0.75rem;">
@@ -539,34 +964,67 @@ $pendingWorkload = match(true) {
     </div>
 <?php endif; ?>
 
-<!-- Peak-End Rule: Institutional Governance, Compliance & Helpdesk Assurance Strip -->
-<div class="card" style="background: linear-gradient(135deg, #ffffff 0%, var(--color-surface-secondary) 100%); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.75rem 2rem; box-shadow: var(--shadow-sm); margin-top: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-        <div style="max-width: 720px;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <span class="badge badge-success" style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 9999px; padding: 0.2rem 0.625rem;">
-                    <i class="fa-solid fa-shield-check" style="margin-right: 0.25rem;"></i> Statutory Assurance
-                </span>
-                <span style="font-size: 0.75rem; color: var(--color-muted-text);">•</span>
-                <span style="font-size: 0.75rem; color: var(--color-muted-text); font-weight: 600;">Republic of Ghana Public Procurement Authority</span>
+<!-- Quick Action Modal for Return / Reject Justification -->
+<div id="actionModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: var(--color-surface); border-radius: var(--radius-lg); padding: 2rem; max-width: 500px; width: 90%; box-shadow: var(--shadow-lg); border: 1px solid var(--color-border);">
+        <h3 id="modalTitle" style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.5rem;">
+            Provide Action Reason
+        </h3>
+        <p id="modalDesc" style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1.25rem;">
+            Please enter a required official comment for this decision.
+        </p>
+        <form id="modalActionForm" method="POST" action="">
+            <?= $csrf() ?>
+            <input type="hidden" id="modalActionInput" name="action" value="">
+            <div style="margin-bottom: 1.25rem;">
+                <label for="modalComments" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
+                    Official Justification / Comments: <span style="color: var(--color-danger);">*</span>
+                </label>
+                <textarea id="modalComments" name="comments" rows="4" required style="width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.625rem; font-size: 0.875rem; background: var(--color-surface); color: var(--color-text);" placeholder="Enter detailed reason..."></textarea>
             </div>
-            <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.375rem 0;">
-                University of Skills Training and Entrepreneurial Development (USTED)
-            </h4>
-            <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0; line-height: 1.5;">
-                All requisition actions, budgetary commitments, and deanship endorsements are executed in strict accordance with the Public Procurement Act, 2003 (Act 663) as amended by Act 914, and the Public Financial Management Act, 2016 (Act 921).
-            </p>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-            <a href="mailto:procurement@usted.edu.gh" class="btn btn-outline" style="font-size: 0.8125rem; padding: 0.5rem 0.875rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem;" title="Contact Procurement Directorate Helpdesk">
-                <i class="fa-solid fa-headset" style="color: var(--color-primary);"></i>
-                <span>Procurement Helpdesk</span>
-            </a>
-            <a href="#mainContent" class="btn btn-primary" style="font-size: 0.8125rem; padding: 0.5rem 1rem; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 0.375rem; box-shadow: var(--shadow-xs);">
-                <i class="fa-solid fa-arrow-up"></i>
-                <span>Back to Top</span>
-            </a>
-        </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" class="btn btn-outline" onclick="closeActionModal()" style="font-size: 0.8125rem; padding: 0.5rem 1rem;">Cancel</button>
+                <button type="submit" id="modalSubmitBtn" class="btn btn-primary" style="font-size: 0.8125rem; padding: 0.5rem 1.25rem;">Confirm Action</button>
+            </div>
+        </form>
     </div>
 </div>
+
+<script>
+function switchRoleQueue(role) {
+    document.querySelectorAll('.role-queue-panel').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    var target = document.getElementById('queue-panel-' + role);
+    if (target) {
+        target.style.display = 'block';
+    }
+}
+
+function openActionModal(action, reqId, reqNumber) {
+    var modal = document.getElementById('actionModal');
+    var form = document.getElementById('modalActionForm');
+    var actionInput = document.getElementById('modalActionInput');
+    var title = document.getElementById('modalTitle');
+    var submitBtn = document.getElementById('modalSubmitBtn');
+    
+    form.action = '<?= $e($appUrl ?? '') ?>/requisitions/' + reqId + '/action';
+    actionInput.value = action;
+    
+    if (action === 'RETURN') {
+        title.textContent = 'Return Requisition #' + reqNumber + ' for Changes';
+        submitBtn.textContent = 'Return Requisition';
+        submitBtn.className = 'btn btn-warning';
+    } else {
+        title.textContent = 'Reject Requisition #' + reqNumber;
+        submitBtn.textContent = 'Reject Requisition';
+        submitBtn.className = 'btn btn-danger';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function closeActionModal() {
+    document.getElementById('actionModal').style.display = 'none';
+}
+</script>

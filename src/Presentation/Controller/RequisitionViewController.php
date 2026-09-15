@@ -590,10 +590,12 @@ final class RequisitionViewController
         // Query Requisition
         $stmt = $this->db->prepare("
             SELECT r.*, pe.entity_name as entity_name, pe.entity_code as entity_code, 
+                   parent_pe.entity_name as faculty_name, parent_pe.entity_code as faculty_code,
                    CONCAT(u.first_name, ' ', u.last_name) as requester_name, u.email as requester_email,
                    CONCAT(sb.first_name, ' ', sb.last_name) as submitter_name
             FROM requisitions r
             JOIN planning_entities pe ON pe.id = r.planning_entity_id
+            LEFT JOIN planning_entities parent_pe ON parent_pe.id = pe.parent_entity_id
             JOIN users u ON u.id = r.created_by
             LEFT JOIN users sb ON sb.id = r.submitted_by
             WHERE r.id = :id

@@ -15,6 +15,10 @@ $suites = [
     'RequisitionWebControllerTest.php' => 6,
     'ProcurementPlanWebControllerTest.php' => 24,
     'AdminUserManagementTest.php' => 10,
+    'AdminEntityManagementTest.php' => 77,
+    'ApprovalLifecycleGovernanceVerificationTest.php' => 41,
+    'FinalEndToEndGovernanceAcceptanceTest.php' => 41,
+    'RoleBasedDashboardQueueTest.php' => 55,
 ];
 
 echo "===============================================================\n";

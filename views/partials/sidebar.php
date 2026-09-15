@@ -149,6 +149,12 @@ if ($pendingBadge === null && !empty($roles)) {
                     </a>
                 </li>
                 <li style="margin-bottom: 0.25rem;">
+                    <a href="<?= $e($appUrl ?? '') ?>/admin/entities" class="nav-item <?= $active === 'admin_entities' ? 'active' : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: <?= $active === 'admin_entities' ? '600' : '500' ?>; color: <?= $active === 'admin_entities' ? 'var(--color-primary)' : 'var(--color-text)' ?>; background: <?= $active === 'admin_entities' ? 'rgba(140, 0, 59, 0.08)' : 'transparent' ?>; border-left: <?= $active === 'admin_entities' ? '3px solid var(--color-primary)' : '3px solid transparent' ?>; transition: all 0.15s ease;">
+                        <i class="fa-solid fa-sitemap" style="width: 1.25rem; text-align: center; color: <?= $active === 'admin_entities' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>;"></i>
+                        <span>Entity Management</span>
+                    </a>
+                </li>
+                <li style="margin-bottom: 0.25rem;">
                     <a href="<?= $e($appUrl ?? '') ?>/dashboard#audit" class="nav-item" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--color-text);">
                         <i class="fa-solid fa-clipboard-list" style="width: 1.25rem; text-align: center; color: var(--color-muted-text);"></i>
                         <span>Audit Logs</span>

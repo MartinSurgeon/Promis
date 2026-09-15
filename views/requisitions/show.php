@@ -213,73 +213,121 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
     <!-- Requisition Overview Card -->
     <div class="card p-6" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.75rem 2rem; box-shadow: var(--shadow-sm); margin: 0;">
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0 0 1rem 0; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
-            Request Overview
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0 0 1rem 0; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fa-solid fa-file-lines" style="color: var(--color-primary); margin-right: 0.5rem;"></i> Request Information</span>
+            <span class="badge badge-<?= $badgeCls ?>" style="font-size: 0.75rem;"><?= $e($status) ?></span>
         </h3>
         <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.75rem; font-size: 0.875rem;">
-            <div style="color: var(--color-muted-text); font-weight: 500;">Request Number:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Requisition Number:</div>
             <div style="font-weight: 700; color: var(--color-primary);"><?= $e($requisition['requisition_number']) ?></div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Department/Unit:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Requester:</div>
+            <div><strong><?= $e($requisition['requester_name']) ?></strong> (<?= $e($requisition['requester_email']) ?>)</div>
+
+            <div style="color: var(--color-muted-text); font-weight: 500;">Department:</div>
             <div style="font-weight: 600; color: var(--color-text);"><?= $e($requisition['entity_name']) ?> (<?= $e($requisition['entity_code']) ?>)</div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Year:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Faculty / Division:</div>
+            <div style="font-weight: 600; color: var(--color-text);"><?= $e($requisition['faculty_name'] ?? 'Central Administration / Academic Unit') ?></div>
+
+            <div style="color: var(--color-muted-text); font-weight: 500;">Fiscal Year:</div>
             <div><?= $e((string)$requisition['fiscal_year']) ?></div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Requester:</div>
-            <div><?= $e($requisition['requester_name']) ?> (<?= $e($requisition['requester_email']) ?>)</div>
-
-            <div style="color: var(--color-muted-text); font-weight: 500;">Estimated Total:</div>
-            <div style="font-weight: 800; color: var(--color-text); font-size: 1.125rem;">
+            <div style="color: var(--color-muted-text); font-weight: 500;">Amount:</div>
+            <div style="font-weight: 800; color: var(--color-primary); font-size: 1.125rem;">
                 GHS <?= number_format((float)$requisition['total_estimated_cost'], 2) ?>
             </div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Reason / Purpose:</div>
-            <div style="color: var(--color-text); line-height: 1.4; background: var(--color-surface-secondary); padding: 0.5rem; border-radius: var(--radius-sm);">
+            <div style="color: var(--color-muted-text); font-weight: 500;">Description:</div>
+            <div style="color: var(--color-text); line-height: 1.4; background: var(--color-surface-secondary); padding: 0.625rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
                 <?= nl2br($e($requisition['justification'])) ?>
+            </div>
+
+            <div style="color: var(--color-muted-text); font-weight: 500;">Attachments / Plan:</div>
+            <div style="color: var(--color-muted-text); font-size: 0.8125rem;">
+                <?php if (!empty($requisition['approved_plan_version_id'])): ?>
+                    <span class="badge badge-success" style="font-size: 0.75rem;"><i class="fa-solid fa-paperclip"></i> Plan Version #<?= (int)$requisition['approved_plan_version_id'] ?></span>
+                <?php else: ?>
+                    <span>Standard Procurement Specifications (<?= count($items) ?> items attached)</span>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
-    <!-- Institutional Budget Card -->
+    <!-- Institutional Budget & Governance Status Card -->
     <div class="card p-6" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.75rem 2rem; box-shadow: var(--shadow-sm); margin: 0;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
             <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-vault" style="color: var(--color-forest-green);"></i>
-                Department Budget Check
+                Workflow Status & Budget Check
             </h3>
             <span class="badge badge-<?= $budgetInfo['is_available'] ? 'success' : 'danger' ?>" style="font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.625rem; border-radius: 9999px;">
                 <?= $budgetInfo['is_available'] ? '● Money Available' : '⚠ Budget Low' ?>
             </span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 0.625rem; font-size: 0.8125rem;">
+        <!-- 5-Stage Governance Checklist -->
+        <?php
+        $stUpper = strtoupper($status);
+        $reqPassed = in_array($stUpper, ['SUBMITTED', 'ENDORSED', 'DEPARTMENT_APPROVED', 'COMMITMENT_AUTHORIZED', 'PROCUREMENT_RECEIVED'], true);
+        $hodPassed = in_array($stUpper, ['ENDORSED', 'DEPARTMENT_APPROVED', 'COMMITMENT_AUTHORIZED', 'PROCUREMENT_RECEIVED'], true);
+        $deanPassed = in_array($stUpper, ['DEPARTMENT_APPROVED', 'COMMITMENT_AUTHORIZED', 'PROCUREMENT_RECEIVED'], true);
+        $finPassed = in_array($stUpper, ['COMMITMENT_AUTHORIZED', 'PROCUREMENT_RECEIVED'], true);
+        $procPassed = in_array($stUpper, ['PROCUREMENT_RECEIVED'], true);
+        ?>
+        <div style="background: var(--color-surface-secondary); border-radius: var(--radius-md); padding: 0.875rem 1rem; margin-bottom: 1rem; border: 1px solid var(--color-border);">
+            <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: var(--color-muted-text); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                Governance Pipeline Progression
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8125rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600;">Requester</span>
+                    <span style="color: <?= $reqPassed ? 'var(--color-success)' : ($stUpper === 'DRAFT' ? 'var(--color-warning)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
+                        <?= $reqPassed ? '✓ Submitted' : ($stUpper === 'DRAFT' ? '● Draft' : '○ Pending') ?>
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600;">HOD (Endorsement)</span>
+                    <span style="color: <?= $hodPassed ? 'var(--color-success)' : ($stUpper === 'SUBMITTED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
+                        <?= $hodPassed ? '✓ Endorsed' : ($stUpper === 'SUBMITTED' ? '● Awaiting Endorsement' : '○ Pending') ?>
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600;">Dean (Approval)</span>
+                    <span style="color: <?= $deanPassed ? 'var(--color-success)' : ($stUpper === 'ENDORSED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
+                        <?= $deanPassed ? '✓ Approved' : ($stUpper === 'ENDORSED' ? '● Awaiting Approval' : '○ Pending') ?>
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600;">Finance (Commitment)</span>
+                    <span style="color: <?= $finPassed ? 'var(--color-success)' : ($stUpper === 'DEPARTMENT_APPROVED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
+                        <?= $finPassed ? '✓ Committed' : ($stUpper === 'DEPARTMENT_APPROVED' ? '● Awaiting Commitment' : '○ Pending') ?>
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600;">Procurement (Receipt)</span>
+                    <span style="color: <?= $procPassed ? 'var(--color-success)' : ($stUpper === 'COMMITMENT_AUTHORIZED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
+                        <?= $procPassed ? '✓ Received' : ($stUpper === 'COMMITMENT_AUTHORIZED' ? '● Awaiting Receipt' : '○ Pending') ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 0.5rem; font-size: 0.8125rem;">
             <div style="color: var(--color-muted-text);">Annual Budget:</div>
             <div style="font-weight: 600; color: var(--color-text);">
                 GHS <?= number_format((float)$budgetInfo['allocated_amount'], 2) ?>
             </div>
 
-            <div style="color: var(--color-muted-text);">Money Already Spent/Reserved:</div>
+            <div style="color: var(--color-muted-text);">Committed So Far:</div>
             <div style="font-weight: 600; color: var(--color-primary);">
                 GHS <?= number_format((float)$budgetInfo['committed_amount'], 2) ?>
             </div>
 
-            <div style="color: var(--color-muted-text);">Remaining Balance:</div>
+            <div style="color: var(--color-muted-text);">Available Balance:</div>
             <div style="font-weight: 700; color: <?= $budgetInfo['is_available'] ? 'var(--color-success)' : 'var(--color-danger)' ?>;">
                 GHS <?= number_format((float)$budgetInfo['available_balance'], 2) ?>
             </div>
-
-            <div style="color: var(--color-muted-text);">This Request Amount:</div>
-            <div style="font-weight: 700; color: var(--color-text);">
-                GHS <?= number_format((float)$budgetInfo['requisition_amount'], 2) ?>
-            </div>
-
-            <div style="color: var(--color-muted-text);">Funding Source:</div>
-            <div><?= $e($budgetInfo['funding_source']) ?></div>
-        </div>
-
-        <div style="margin-top: 1rem; padding: 0.625rem; background: var(--color-surface-secondary); border-radius: var(--radius-sm); font-size: 0.75rem; color: var(--color-muted-text); line-height: 1.35;">
-            <strong>Helpful Note:</strong> We check your department budget so requests are kept within university funding limits.
         </div>
     </div>
 </div>
