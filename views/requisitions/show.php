@@ -28,11 +28,11 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
     <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
         <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.375rem; border-color: var(--color-border);">
             <i class="fa-solid fa-arrow-left"></i>
-            <span>Back to Requisitions</span>
+            <span>Back to Requests</span>
         </a>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.01em;">
-                Requisition <?= $e($requisition['requisition_number']) ?>
+                Purchase Request <?= $e($requisition['requisition_number']) ?>
             </h1>
             <?php if ($rStatusEnum): ?>
                 <span class="badge badge-<?= $badgeCls ?>" style="font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.625rem; border-radius: 9999px;">
@@ -88,7 +88,7 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                             onclick="openWorkflowDecisionModal('<?= $e($act) ?>', '<?= $e($actionUrl) ?>')"
                         >
                             <i class="fa-solid <?= $act === 'RETURN' ? 'fa-rotate-left' : 'fa-ban' ?>" style="margin-right: 0.375rem;"></i>
-                            <?= $act === 'RETURN' ? 'Send Back for Changes' : 'Decline Request' ?>
+                            <?= $act === 'RETURN' ? 'Send Back' : 'Reject Request' ?>
                         </button>
                     <?php else: ?>
                         <!-- Dominant Primary Action (Submit, Endorse, Approve, Receive) -->
@@ -99,30 +99,30 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                                 type="submit" 
                                 class="btn btn-primary" 
                                 style="font-size: 0.875rem; font-weight: 700; min-height: 40px; padding: 0.55rem 1.25rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.15s ease, box-shadow 0.15s ease;"
-                                data-confirm="Do you want to continue with <?= match($act) {
-                                    'SUBMIT' => 'submitting this requisition for departmental endorsement',
-                                    'ENDORSE' => 'signing and recommending this requisition for Dean approval',
-                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'approving this requisition for budget commitment' : 'authorizing budget commitment and approving this purchase'),
-                                    'RECEIVE' => 'confirming official physical receipt and delivery of requested items',
-                                    default => $act,
+                                data-confirm="Are you sure you want to <?= match($act) {
+                                    'SUBMIT' => 'send this request for department recommendation',
+                                    'ENDORSE' => 'recommend this request for Faculty approval',
+                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'approve this request for Finance review' : 'approve funds for this purchase'),
+                                    'RECEIVE' => 'confirm that these items have been received',
+                                    default => 'proceed with this action',
                                 } ?>?"
                                 data-confirm-title="Confirm <?= match($act) {
-                                    'SUBMIT' => 'Requisition Submission',
-                                    'ENDORSE' => 'Departmental Endorsement',
-                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Deanship Approval' : 'Budget Commitment Authorization'),
-                                    'RECEIVE' => 'Procurement Delivery Receipt',
-                                    default => 'Governance Decision',
+                                    'SUBMIT' => 'Send for Approval',
+                                    'ENDORSE' => 'Department Recommendation',
+                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Faculty Approval' : 'Finance Approval'),
+                                    'RECEIVE' => 'Confirm Delivery',
+                                    default => 'Action',
                                 } ?>"
-                                data-confirm-detail="This action will be permanently recorded in the official university audit trail."
+                                data-confirm-detail="This decision will be saved in the request history."
                                 data-confirm-type="<?= match($act) {
                                     'APPROVE', 'RECEIVE' => 'success',
                                     default => 'primary',
                                 } ?>"
                                 data-confirm-btn="<?= match($act) {
-                                    'SUBMIT' => 'Submit Requisition',
-                                    'ENDORSE' => 'Sign & Endorse',
-                                    'APPROVE' => 'Authorize & Approve',
-                                    'RECEIVE' => 'Confirm Delivery',
+                                    'SUBMIT' => 'Send Request',
+                                    'ENDORSE' => 'Recommend',
+                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Approve Request' : 'Approve for Purchase'),
+                                    'RECEIVE' => 'Record Delivery',
                                     default => 'Confirm',
                                 } ?>"
                                 data-confirm-icon="<?= match($act) {
@@ -141,10 +141,10 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                                     default => 'fa-circle-check',
                                 } ?>"></i>
                                 <span><?= match($act) {
-                                    'SUBMIT' => 'Send for Review',
-                                    'ENDORSE' => 'Sign & Recommend (HOD)',
-                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Approve Request (Dean)' : 'Confirm Budget & Approve (Finance)'),
-                                    'RECEIVE' => 'Confirm Items Received (Procurement)',
+                                    'SUBMIT' => 'Send for Approval',
+                                    'ENDORSE' => 'Recommend',
+                                    'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Approve Request' : 'Approve for Purchase'),
+                                    'RECEIVE' => 'Record Delivery',
                                     default => $act,
                                 } ?></span>
                             </button>
@@ -218,7 +218,7 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
             <span class="badge badge-<?= $badgeCls ?>" style="font-size: 0.75rem;"><?= $e($status) ?></span>
         </h3>
         <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.75rem; font-size: 0.875rem;">
-            <div style="color: var(--color-muted-text); font-weight: 500;">Requisition Number:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Request Number:</div>
             <div style="font-weight: 700; color: var(--color-primary);"><?= $e($requisition['requisition_number']) ?></div>
 
             <div style="color: var(--color-muted-text); font-weight: 500;">Requester:</div>
@@ -230,25 +230,25 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
             <div style="color: var(--color-muted-text); font-weight: 500;">Faculty / Division:</div>
             <div style="font-weight: 600; color: var(--color-text);"><?= $e($requisition['faculty_name'] ?? 'Central Administration / Academic Unit') ?></div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Fiscal Year:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Budget Year:</div>
             <div><?= $e((string)$requisition['fiscal_year']) ?></div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Amount:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Estimated Cost:</div>
             <div style="font-weight: 800; color: var(--color-primary); font-size: 1.125rem;">
                 GHS <?= number_format((float)$requisition['total_estimated_cost'], 2) ?>
             </div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Description:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Reason:</div>
             <div style="color: var(--color-text); line-height: 1.4; background: var(--color-surface-secondary); padding: 0.625rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
                 <?= nl2br($e($requisition['justification'])) ?>
             </div>
 
-            <div style="color: var(--color-muted-text); font-weight: 500;">Attachments / Plan:</div>
+            <div style="color: var(--color-muted-text); font-weight: 500;">Plan & Attachments:</div>
             <div style="color: var(--color-muted-text); font-size: 0.8125rem;">
                 <?php if (!empty($requisition['approved_plan_version_id'])): ?>
                     <span class="badge badge-success" style="font-size: 0.75rem;"><i class="fa-solid fa-paperclip"></i> Plan Version #<?= (int)$requisition['approved_plan_version_id'] ?></span>
                 <?php else: ?>
-                    <span>Standard Procurement Specifications (<?= count($items) ?> items attached)</span>
+                    <span>Approved Procurement Items (<?= count($items) ?> items attached)</span>
                 <?php endif; ?>
             </div>
         </div>
@@ -259,14 +259,14 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
             <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-vault" style="color: var(--color-forest-green);"></i>
-                Workflow Status & Budget Check
+                Request Progress & Budget Check
             </h3>
             <span class="badge badge-<?= $budgetInfo['is_available'] ? 'success' : 'danger' ?>" style="font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.625rem; border-radius: 9999px;">
                 <?= $budgetInfo['is_available'] ? '● Money Available' : '⚠ Budget Low' ?>
             </span>
         </div>
 
-        <!-- 5-Stage Governance Checklist -->
+        <!-- 5-Stage Approval Checklist -->
         <?php
         $stUpper = strtoupper($status);
         $reqPassed = in_array($stUpper, ['SUBMITTED', 'ENDORSED', 'DEPARTMENT_APPROVED', 'COMMITMENT_AUTHORIZED', 'PROCUREMENT_RECEIVED'], true);
@@ -277,37 +277,37 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
         ?>
         <div style="background: var(--color-surface-secondary); border-radius: var(--radius-md); padding: 0.875rem 1rem; margin-bottom: 1rem; border: 1px solid var(--color-border);">
             <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: var(--color-muted-text); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
-                Governance Pipeline Progression
+                Approval Progress
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8125rem;">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <span style="font-weight: 600;">Requester</span>
                     <span style="color: <?= $reqPassed ? 'var(--color-success)' : ($stUpper === 'DRAFT' ? 'var(--color-warning)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
-                        <?= $reqPassed ? '✓ Submitted' : ($stUpper === 'DRAFT' ? '● Draft' : '○ Pending') ?>
+                        <?= $reqPassed ? '✓ Sent' : ($stUpper === 'DRAFT' ? '● Draft' : '○ Pending') ?>
                     </span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-weight: 600;">HOD (Endorsement)</span>
+                    <span style="font-weight: 600;">Department (Review)</span>
                     <span style="color: <?= $hodPassed ? 'var(--color-success)' : ($stUpper === 'SUBMITTED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
-                        <?= $hodPassed ? '✓ Endorsed' : ($stUpper === 'SUBMITTED' ? '● Awaiting Endorsement' : '○ Pending') ?>
+                        <?= $hodPassed ? '✓ Recommended' : ($stUpper === 'SUBMITTED' ? '● Waiting for Review' : '○ Pending') ?>
                     </span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-weight: 600;">Dean (Approval)</span>
+                    <span style="font-weight: 600;">Faculty (Approval)</span>
                     <span style="color: <?= $deanPassed ? 'var(--color-success)' : ($stUpper === 'ENDORSED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
-                        <?= $deanPassed ? '✓ Approved' : ($stUpper === 'ENDORSED' ? '● Awaiting Approval' : '○ Pending') ?>
+                        <?= $deanPassed ? '✓ Approved' : ($stUpper === 'ENDORSED' ? '● Waiting for Approval' : '○ Pending') ?>
                     </span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-weight: 600;">Finance (Commitment)</span>
+                    <span style="font-weight: 600;">Finance (Approval)</span>
                     <span style="color: <?= $finPassed ? 'var(--color-success)' : ($stUpper === 'DEPARTMENT_APPROVED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
-                        <?= $finPassed ? '✓ Committed' : ($stUpper === 'DEPARTMENT_APPROVED' ? '● Awaiting Commitment' : '○ Pending') ?>
+                        <?= $finPassed ? '✓ Approved for Purchase' : ($stUpper === 'DEPARTMENT_APPROVED' ? '● Waiting for Finance Review' : '○ Pending') ?>
                     </span>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-weight: 600;">Procurement (Receipt)</span>
+                    <span style="font-weight: 600;">Procurement (Delivery)</span>
                     <span style="color: <?= $procPassed ? 'var(--color-success)' : ($stUpper === 'COMMITMENT_AUTHORIZED' ? 'var(--color-primary)' : 'var(--color-muted-text)') ?>; font-weight: 700;">
-                        <?= $procPassed ? '✓ Received' : ($stUpper === 'COMMITMENT_AUTHORIZED' ? '● Awaiting Receipt' : '○ Pending') ?>
+                        <?= $procPassed ? '✓ Items Received' : ($stUpper === 'COMMITMENT_AUTHORIZED' ? '● Waiting for Delivery' : '○ Pending') ?>
                     </span>
                 </div>
             </div>
@@ -390,10 +390,10 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-timeline" style="color: var(--color-primary);"></i>
-            Approval History & Comments
+            Activity History
         </h3>
         <span class="badge badge-info" style="font-size: 0.6875rem;">
-            Permanent Audit Record
+            Saved History
         </span>
     </div>
 
@@ -409,8 +409,8 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                         <th style="padding: 0.625rem; color: var(--color-muted-text);">Date & Time</th>
                         <th style="padding: 0.625rem; color: var(--color-muted-text);">Action</th>
                         <th style="padding: 0.625rem; color: var(--color-muted-text);">Status Change</th>
-                        <th style="padding: 0.625rem; color: var(--color-muted-text);">Officer</th>
-                        <th style="padding: 0.625rem; color: var(--color-muted-text);">Notes / Comments</th>
+                        <th style="padding: 0.625rem; color: var(--color-muted-text);">Action Taken By</th>
+                        <th style="padding: 0.625rem; color: var(--color-muted-text);">Comments & Notes</th>
                     </tr>
                 </thead>
                 <tbody>

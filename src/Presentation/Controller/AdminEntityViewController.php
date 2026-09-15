@@ -65,7 +65,7 @@ final class AdminEntityViewController
         $baseAppUrl = $this->resolveAppUrl($request);
 
         $html = View::render('admin/entities/index', [
-            'title' => 'PROMIS - Planning Entity Management',
+            'title' => 'PROMIS - Departments and Units',
             'entities' => $data['entities'],
             'totalRecords' => $data['total_records'],
             'totalPages' => $data['total_pages'],
@@ -81,10 +81,10 @@ final class AdminEntityViewController
             'tree' => $tree,
             'appUrl' => $baseAppUrl,
             'activeNav' => 'admin_entities',
-            'pageTitle' => 'Planning Entity Management',
+            'pageTitle' => 'Departments and Units',
             'breadcrumbs' => [
                 ['label' => 'Administration', 'url' => ''],
-                ['label' => 'Planning Entity Management', 'url' => ''],
+                ['label' => 'Departments and Units', 'url' => ''],
             ],
             'user' => AuthManager::user(),
         ], 'app');
@@ -123,7 +123,7 @@ final class AdminEntityViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', "Planning entity '{$dto->entityName}' ({$dto->entityCode}) created successfully.");
+            Session::flash('success', "Department or unit '{$dto->entityName}' ({$dto->entityCode}) created successfully.");
 
             if ($request->isJson()) {
                 return Response::json([
@@ -180,10 +180,10 @@ final class AdminEntityViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', "Planning entity #{$entityId} updated successfully.");
+            Session::flash('success', "Department or unit #{$entityId} updated successfully.");
 
             if ($request->isJson()) {
-                return Response::json(['success' => true, 'message' => 'Entity updated successfully.']);
+                return Response::json(['success' => true, 'message' => 'Department or unit updated successfully.']);
             }
 
             return Response::redirect('/admin/entities');
@@ -194,7 +194,7 @@ final class AdminEntityViewController
             }
             return Response::redirect('/admin/entities');
         } catch (Throwable $e) {
-            Session::flash('error', 'Failed to update entity: ' . $e->getMessage());
+            Session::flash('error', 'Failed to update department or unit: ' . $e->getMessage());
             if ($request->isJson()) {
                 return Response::json(['error' => true, 'message' => $e->getMessage()], 500);
             }
@@ -243,7 +243,7 @@ final class AdminEntityViewController
             );
 
             $statusLabel = $isActive ? 'activated' : 'deactivated';
-            Session::flash('success', "Entity {$statusLabel} successfully.");
+            Session::flash('success', "Department or unit {$statusLabel} successfully.");
 
             if ($request->isJson()) {
                 return Response::json(['success' => true, 'is_active' => $isActive]);

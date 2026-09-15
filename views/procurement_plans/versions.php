@@ -20,21 +20,21 @@ $planId = (int)$plan['id'];
     <i class="fa-solid fa-chevron-right" style="font-size: 0.6875rem;"></i>
     <a href="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>" style="color: var(--color-muted-text); text-decoration: none;"><?= $e($plan['plan_number']) ?></a>
     <i class="fa-solid fa-chevron-right" style="font-size: 0.6875rem;"></i>
-    <span style="color: var(--color-text); font-weight: 600;">Version History & Revisions</span>
+    <span style="color: var(--color-text); font-weight: 600;">Plan History & Versions</span>
 </div>
 
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
     <div>
         <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.375rem; letter-spacing: -0.02em;">
-            Version History & Review Cycles: <?= $e($plan['plan_number']) ?>
+            Plan History: <?= $e($plan['plan_number']) ?>
         </h1>
         <p style="font-size: 0.875rem; color: var(--color-muted-text); margin: 0;">
-            Complete audit trail of version baselines, formal revisions, delta cost variances, and quarterly review cycles.
+            History of plan versions, updates, price adjustments, and quarterly reviews.
         </p>
     </div>
 
     <a href="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>" class="btn btn-secondary" style="font-weight: 600;">
-        <i class="fa-solid fa-arrow-left"></i> Back to Plan Details
+        <i class="fa-solid fa-arrow-left"></i> Back to Plan
     </a>
 </div>
 
@@ -43,7 +43,7 @@ $planId = (int)$plan['id'];
     <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
         <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-code-branch" style="color: var(--color-primary);"></i>
-            <span>Plan Version Baselines</span>
+            <span>Plan Versions</span>
         </h2>
         <span style="font-size: 0.8125rem; font-weight: 700; color: var(--color-muted-text);">
             <?= count($versions) ?> Total Versions
@@ -56,11 +56,11 @@ $planId = (int)$plan['id'];
                 <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border); color: var(--color-muted-text); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
                     <th style="padding: 0.75rem 1rem;">Version</th>
                     <th style="padding: 0.75rem 1rem;">Status</th>
-                    <th style="padding: 0.75rem 1rem; text-align: right;">Total Estimated Cost</th>
+                    <th style="padding: 0.75rem 1rem; text-align: right;">Total Estimated Budget</th>
                     <th style="padding: 0.75rem 1rem; text-align: center;">Items</th>
-                    <th style="padding: 0.75rem 1rem;">Formulated By</th>
-                    <th style="padding: 0.75rem 1rem;">Approval Details</th>
-                    <th style="padding: 0.75rem 1rem;">Revision Reason</th>
+                    <th style="padding: 0.75rem 1rem;">Created By</th>
+                    <th style="padding: 0.75rem 1rem;">Approval Info</th>
+                    <th style="padding: 0.75rem 1rem;">Reason for Update</th>
                 </tr>
             </thead>
             <tbody>
@@ -126,23 +126,23 @@ $planId = (int)$plan['id'];
     <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border);">
         <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-arrows-split-up-and-left" style="color: var(--color-primary);"></i>
-            <span>Formal Revision Delta Records</span>
+            <span>Changes & Price Updates</span>
         </h2>
     </div>
 
     <?php if (empty($revisions)): ?>
         <div style="padding: 2.5rem; text-align: center; color: var(--color-muted-text); font-size: 0.875rem;">
-            No formal revision variances recorded. Current plan remains on initial baseline.
+            No revisions recorded. This plan remains on its original version.
         </div>
     <?php else: ?>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem; text-align: left;">
                 <thead>
                     <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border); color: var(--color-muted-text); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-                        <th style="padding: 0.75rem 1rem;">Transition</th>
-                        <th style="padding: 0.75rem 1rem;">Revision Type</th>
-                        <th style="padding: 0.75rem 1rem; text-align: right;">Cost Variance (Delta)</th>
-                        <th style="padding: 0.75rem 1rem;">Justification Remarks</th>
+                        <th style="padding: 0.75rem 1rem;">Version Change</th>
+                        <th style="padding: 0.75rem 1rem;">Type of Change</th>
+                        <th style="padding: 0.75rem 1rem; text-align: right;">Budget Change (GHS)</th>
+                        <th style="padding: 0.75rem 1rem;">Reason for Change</th>
                         <th style="padding: 0.75rem 1rem;">Recorded By</th>
                     </tr>
                 </thead>
@@ -178,13 +178,13 @@ $planId = (int)$plan['id'];
     <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border);">
         <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-chart-line" style="color: var(--color-primary);"></i>
-            <span>Quarterly Review Cycles (Q1 - Q4)</span>
+            <span>Quarterly Reviews (Q1 - Q4)</span>
         </h2>
     </div>
 
     <?php if (empty($cycles)): ?>
         <div style="padding: 2.5rem; text-align: center; color: var(--color-muted-text); font-size: 0.875rem;">
-            No quarterly review cycles conducted yet for FY <?= $e($plan['fiscal_year']) ?>.
+            No quarterly reviews conducted yet for Year <?= $e($plan['fiscal_year']) ?>.
         </div>
     <?php else: ?>
         <div style="overflow-x: auto;">

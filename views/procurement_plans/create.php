@@ -20,15 +20,15 @@
 <div style="font-size: 0.8125rem; color: var(--color-muted-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
     <a href="<?= $e($appUrl ?? '') ?>/procurement-plans" style="color: var(--color-muted-text); text-decoration: none;">Procurement Plans</a>
     <i class="fa-solid fa-chevron-right" style="font-size: 0.6875rem;"></i>
-    <span style="color: var(--color-text); font-weight: 600;">Formulate Plan</span>
+    <span style="color: var(--color-text); font-weight: 600;">New Plan</span>
 </div>
 
 <div class="page-header" style="margin-bottom: 1.5rem;">
     <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.375rem; letter-spacing: -0.02em;">
-        Formulate Annual Procurement Plan
+        Create Annual Procurement Plan
     </h1>
     <p style="font-size: 0.875rem; color: var(--color-muted-text); margin: 0;">
-        Prepare your entity's procurement forecast for the upcoming financial year. Group items under categories such as Electricals, Office Equipment, Works, Software, and Teaching Materials.
+        List all items, equipment, and services your department will need for this academic year.
     </p>
 </div>
 
@@ -39,14 +39,14 @@
     <div class="card" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
         <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0 0 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-building-columns" style="color: var(--color-primary);"></i>
-            <span>Plan Header & Institutional Details</span>
+            <span>Department & Budget Year</span>
         </h2>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
             <!-- Planning Entity -->
             <div>
                 <label for="planning_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                    Planning Entity / Department <span style="color: var(--color-danger);">*</span>
+                    Department <span style="color: var(--color-danger);">*</span>
                 </label>
                 <select id="planning_entity_id" name="planning_entity_id" required 
                         style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
@@ -57,14 +57,14 @@
                     <?php endforeach; ?>
                 </select>
                 <div style="font-size: 0.75rem; color: var(--color-muted-text); margin-top: 0.25rem;">
-                    Entity responsible for executing and drawing down against this procurement plan.
+                    Department making this procurement plan.
                 </div>
             </div>
 
             <!-- Fiscal Year -->
             <div>
                 <label for="fiscal_year" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                    Financial Year <span style="color: var(--color-danger);">*</span>
+                    Budget Year <span style="color: var(--color-danger);">*</span>
                 </label>
                 <select id="fiscal_year" name="fiscal_year" required
                         style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
@@ -72,24 +72,24 @@
                     $curYear = (int)date('Y');
                     for ($y = $curYear + 1; $y >= $curYear - 1; $y--): ?>
                         <option value="<?= $y ?>" <?= $defaultFiscalYear === $y ? 'selected' : '' ?>>
-                            <?= $y ?> Financial Year
+                            Year <?= $y ?>
                         </option>
                     <?php endfor; ?>
                 </select>
                 <div style="font-size: 0.75rem; color: var(--color-muted-text); margin-top: 0.25rem;">
-                    Annual operational budget period.
+                    Academic or fiscal budget year.
                 </div>
             </div>
 
             <!-- Baseline Version Indicator -->
             <div>
                 <label for="plan_version_baseline" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                    Version Baseline
+                    Plan Version
                 </label>
-                <input type="text" id="plan_version_baseline" name="plan_version_baseline" readonly value="Version 1.0 (Initial Draft Baseline)"
+                <input type="text" id="plan_version_baseline" name="plan_version_baseline" readonly value="Version 1.0 (Initial Draft)"
                        style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-surface-secondary); color: var(--color-muted-text); font-weight: 600;">
                 <div style="font-size: 0.75rem; color: var(--color-muted-text); margin-top: 0.25rem;">
-                    Subsequent modifications will be tracked as revisions (e.g., v2.0).
+                    Any changes later will be saved as new versions (e.g., v2.0).
                 </div>
             </div>
         </div>
@@ -101,16 +101,16 @@
             <div>
                 <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-solid fa-list-check" style="color: var(--color-primary);"></i>
-                    <span>Planned Procurement Items (Categorized Forecast)</span>
+                    <span>Planned Items & Estimated Costs</span>
                 </h2>
                 <div style="font-size: 0.8125rem; color: var(--color-muted-text); margin-top: 0.25rem;">
-                    Structure follows the official Institutional Procurement Plan format.
+                    Add all items your department needs to purchase this year.
                 </div>
             </div>
 
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button type="button" id="addItemBtn" class="btn btn-secondary" style="font-weight: 600; font-size: 0.8125rem; padding: 0.5rem 0.875rem;">
-                    <i class="fa-solid fa-plus"></i> Add Item Line
+                    <i class="fa-solid fa-plus"></i> Add Item
                 </button>
             </div>
         </div>
@@ -121,12 +121,12 @@
                 <thead>
                     <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border); color: var(--color-muted-text); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
                         <th style="padding: 0.75rem 0.5rem; width: 40px; text-align: center;">#</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 170px;">Category / Package</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 170px;">Category</th>
                         <th style="padding: 0.75rem 0.5rem; min-width: 220px;">Item Description & Specifications</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 110px;">UOM</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 110px;">Unit</th>
                         <th style="padding: 0.75rem 0.5rem; width: 90px; text-align: right;">Qty</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 120px; text-align: right;">Est. Unit Cost</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 130px; text-align: right;">Total Cost (GHS)</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 120px; text-align: right;">Unit Price</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 130px; text-align: right;">Item Total (GHS)</th>
                         <th style="padding: 0.75rem 0.5rem; width: 90px;">Quarter</th>
                         <th style="padding: 0.75rem 0.5rem; width: 130px;">Funding Source</th>
                         <th style="padding: 0.75rem 0.5rem; width: 50px; text-align: center;"></th>
@@ -149,7 +149,7 @@
 
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <span style="font-size: 0.875rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">
-                    Total Estimated Plan Cost:
+                    Total Estimated Budget:
                 </span>
                 <span id="grandTotalDisplay" style="font-size: 1.375rem; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums;">
                     GHS 0.00
@@ -161,22 +161,22 @@
     <!-- Submission Actions Bar -->
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <a href="<?= $e($appUrl ?? '') ?>/procurement-plans" class="btn btn-secondary" style="font-weight: 600;">
-            <i class="fa-solid fa-arrow-left"></i> Cancel & Return
+            <i class="fa-solid fa-arrow-left"></i> Cancel
         </a>
 
         <div style="display: flex; gap: 0.75rem;">
             <button type="submit" name="action" value="draft" class="btn btn-secondary" style="font-weight: 700; padding: 0.625rem 1.25rem;">
-                <i class="fa-solid fa-floppy-disk"></i> Save as Draft
+                <i class="fa-solid fa-floppy-disk"></i> Save Draft
             </button>
 
             <button type="submit" name="action" value="submit" class="btn btn-primary" style="font-weight: 700; padding: 0.625rem 1.5rem;"
-                    data-confirm="Are you sure you want to submit this Procurement Plan for institutional approval?"
-                    data-confirm-title="Submit Annual Procurement Plan"
-                    data-confirm-detail="Editing will be locked until the institutional governance review is complete."
+                    data-confirm="Are you sure you want to send this procurement plan for approval?"
+                    data-confirm-title="Send Procurement Plan for Approval"
+                    data-confirm-detail="Once sent, your plan will be reviewed by the procurement committee."
                     data-confirm-type="primary"
-                    data-confirm-btn="Submit for Approval"
+                    data-confirm-btn="Send for Approval"
                     data-confirm-icon="fa-paper-plane">
-                <i class="fa-solid fa-paper-plane"></i> Submit Plan for Approval
+                <i class="fa-solid fa-paper-plane"></i> Send Plan for Approval
             </button>
         </div>
     </div>

@@ -43,14 +43,14 @@ foreach ($plans as $p) {
             Annual Procurement Plans
         </h1>
         <p style="font-size: 0.875rem; color: var(--color-muted-text); margin: 0; max-width: 650px;">
-            Forecast, formulate, review, and manage annual departmental procurement requirements for goods, works, and services.
+            Plan and manage annual department procurement requests for goods, works, and services.
         </p>
     </div>
 
     <?php if ($canCreate): ?>
         <a href="<?= $e($appUrl ?? '') ?>/procurement-plans/create" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; box-shadow: var(--shadow-sm); padding: 0.625rem 1.25rem;">
             <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            <span>Formulate Procurement Plan</span>
+            <span>New Procurement Plan</span>
         </a>
     <?php endif; ?>
 </div>
@@ -66,7 +66,7 @@ foreach ($plans as $p) {
                 <?= (int)($statusCounts['ALL'] ?? 0) ?>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem;">
-                Total Procurement Plans
+                Total Plans
             </div>
         </div>
     </div>
@@ -80,7 +80,7 @@ foreach ($plans as $p) {
                 <?= (int)($statusCounts['APPROVED'] ?? 0) ?>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem;">
-                Approved & Active Plans
+                Approved Plans
             </div>
         </div>
     </div>
@@ -94,7 +94,7 @@ foreach ($plans as $p) {
                 <?= (int)($statusCounts['SUBMITTED'] ?? 0) + (int)($statusCounts['UNDER_REVIEW'] ?? 0) ?>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem;">
-                Awaiting Approval
+                Waiting for Approval
             </div>
         </div>
     </div>
@@ -108,7 +108,7 @@ foreach ($plans as $p) {
                 <?= (int)($statusCounts['DRAFT'] ?? 0) + (int)($statusCounts['RETURNED'] ?? 0) ?>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem;">
-                Drafts & Returned Queries
+                Drafts & Returned Plans
             </div>
         </div>
     </div>
@@ -147,13 +147,13 @@ foreach ($plans as $p) {
         <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; flex: 1; min-width: 280px;">
             <div style="position: relative; flex: 1; min-width: 220px;">
                 <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--color-muted-text); font-size: 0.875rem;"></i>
-                <input type="text" name="search" value="<?= $e($search) ?>" placeholder="Search by plan number or entity..." 
+                <input type="text" name="search" value="<?= $e($search) ?>" placeholder="Search by plan number or department..." 
                        style="width: 100%; padding: 0.5rem 0.875rem 0.5rem 2.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
             </div>
 
             <?php if (count($availableEntities) > 1): ?>
                 <select name="entity_id" style="padding: 0.5rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text); min-width: 180px;">
-                    <option value="">All Authorized Entities</option>
+                    <option value="">All Departments</option>
                     <?php foreach ($availableEntities as $ent): ?>
                         <option value="<?= (int)$ent['id'] ?>" <?= $entityFilter === (int)$ent['id'] ? 'selected' : '' ?>>
                             <?= $e($ent['entity_name']) ?> (<?= $e($ent['entity_code']) ?>)
@@ -163,11 +163,11 @@ foreach ($plans as $p) {
             <?php endif; ?>
 
             <select name="fiscal_year" style="padding: 0.5rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text); min-width: 130px;">
-                <option value="">All Years</option>
+                <option value="">All Budget Years</option>
                 <?php 
                 $curYear = (int)date('Y');
                 for ($y = $curYear + 1; $y >= $curYear - 2; $y--): ?>
-                    <option value="<?= $y ?>" <?= $fiscalYear === (string)$y ? 'selected' : '' ?>>FY <?= $y ?></option>
+                    <option value="<?= $y ?>" <?= $fiscalYear === (string)$y ? 'selected' : '' ?>>Year <?= $y ?></option>
                 <?php endfor; ?>
             </select>
         </div>
@@ -198,7 +198,7 @@ foreach ($plans as $p) {
             </p>
             <?php if ($canCreate): ?>
                 <a href="<?= $e($appUrl ?? '') ?>/procurement-plans/create" class="btn btn-primary" style="font-weight: 600;">
-                    <i class="fa-solid fa-plus"></i> Formulate First Procurement Plan
+                    <i class="fa-solid fa-plus"></i> Create New Plan
                 </a>
             <?php endif; ?>
         </div>
@@ -208,10 +208,10 @@ foreach ($plans as $p) {
                 <thead>
                     <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border); color: var(--color-muted-text); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
                         <th style="padding: 0.875rem 1rem;">Plan Number</th>
-                        <th style="padding: 0.875rem 1rem;">Planning Entity</th>
-                        <th style="padding: 0.875rem 1rem; text-align: center;">Fiscal Year</th>
+                        <th style="padding: 0.875rem 1rem;">Department</th>
+                        <th style="padding: 0.875rem 1rem; text-align: center;">Budget Year</th>
                         <th style="padding: 0.875rem 1rem; text-align: center;">Version</th>
-                        <th style="padding: 0.875rem 1rem; text-align: right;">Total Estimated Cost</th>
+                        <th style="padding: 0.875rem 1rem; text-align: right;">Total Estimated Budget</th>
                         <th style="padding: 0.875rem 1rem; text-align: center;">Items</th>
                         <th style="padding: 0.875rem 1rem;">Status</th>
                         <th style="padding: 0.875rem 1rem; text-align: right;">Action</th>

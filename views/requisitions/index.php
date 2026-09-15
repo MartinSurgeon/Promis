@@ -41,13 +41,13 @@ $primaryRole = match(true) {
 };
 
 $stageName = match($primaryRole) {
-    'HOD' => 'Departmental Endorsement',
-    'DEAN' => 'Deanship Approval',
-    'FINANCE_OFFICER' => 'Budget Commitment',
-    'PROCUREMENT_OFFICER' => 'Procurement Receipt',
-    'ADMIN' => 'Governance Review',
-    'REQUESTER' => 'Authoring Draft',
-    default => 'Governance Review',
+    'HOD' => 'Department Review',
+    'DEAN' => 'Faculty Approval',
+    'FINANCE_OFFICER' => 'Finance Approval',
+    'PROCUREMENT_OFFICER' => 'Purchase Processing',
+    'ADMIN' => 'System Overview',
+    'REQUESTER' => 'Preparing Draft',
+    default => 'Review Stage',
 };
 ?>
 
@@ -63,7 +63,7 @@ $stageName = match($primaryRole) {
                 <?= (int)$totalRecords ?> <span style="font-size: 0.8125rem; font-weight: 500; color: var(--color-muted-text);"><?= (int)$totalRecords === 1 ? 'Request' : 'Requests' ?></span>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem; line-height: 1.3;">
-                <?= $filter === 'pending' ? 'Requests Waiting for You' : 'Total Requisitions' ?>
+                <?= $filter === 'pending' ? 'Requests Waiting for You' : 'Total Requests' ?>
             </div>
         </div>
     </div>
@@ -78,12 +78,12 @@ $stageName = match($primaryRole) {
                 GHS <?= number_format((float)($totalQueueCost ?? 0), 2) ?>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem; line-height: 1.3;">
-                Total Cost of Requests
+                Total Estimated Cost
             </div>
         </div>
     </div>
 
-    <!-- KPI 3: Governance Stage -->
+    <!-- KPI 3: Current Review Stage -->
     <div class="card" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.125rem; box-shadow: var(--shadow-sm); margin: 0;">
         <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: rgba(221, 153, 51, 0.12); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
             <i class="fa-solid fa-stamp"></i>
@@ -93,7 +93,7 @@ $stageName = match($primaryRole) {
                 <?= $e($stageName) ?>
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem; line-height: 1.3;">
-                <?= $e(str_replace('_', ' ', $primaryRole)) ?> Stage
+                Current Review Stage
             </div>
         </div>
     </div>
@@ -108,7 +108,7 @@ $stageName = match($primaryRole) {
                 Ghana PPA Rules
             </div>
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-top: 0.25rem;">
-                Official Procurement Standards
+                Procurement Guidelines
             </div>
         </div>
     </div>
@@ -120,20 +120,20 @@ $stageName = match($primaryRole) {
     <div style="padding: 1.75rem 2rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--color-border-subtle);">
         <div>
             <h1 style="font-size: 1.375rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.35rem 0; letter-spacing: -0.01em;">
-                <?= $filter === 'pending' ? 'Pending Approval Queues' : 'Departmental Requisitions' ?>
+                <?= $filter === 'pending' ? 'Requests Waiting for Me' : 'Purchase Requests' ?>
             </h1>
             <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0; line-height: 1.4;">
                 <?= $filter === 'pending' 
-                    ? 'Review, verify, and approve departmental requests waiting for your sign-off.'
+                    ? 'Review, recommend, or approve departmental requests waiting for your action.'
                     : 'See all item requests from departments and check their progress step-by-step.' ?>
             </p>
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-            <!-- Primary Make a Requisition Action Button -->
+            <!-- Primary Action Button -->
             <a href="<?= $e($appUrl ?? '') ?>/requisitions/create" class="btn btn-primary" style="background: var(--color-success); color: #ffffff; font-weight: 700; font-size: 0.875rem; min-height: 40px; padding: 0.5rem 1.125rem; border-radius: var(--radius-md); box-shadow: 0 2px 4px rgba(0,105,56,0.15); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; border: none; transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,105,56,0.25)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0,105,56,0.15)';">
                 <i class="fa-solid fa-plus"></i>
-                <span>Make a Requisition</span>
+                <span>New Request</span>
             </a>
 
             <!-- Segmented Mode Control (Familiar Tab Switcher) -->
@@ -141,12 +141,12 @@ $stageName = match($primaryRole) {
                 <a href="<?= $e($appUrl ?? '') ?>/requisitions" 
                    style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 1rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; border-radius: calc(var(--radius-md) - 2px); transition: all 0.15s ease; color: <?= $filter !== 'pending' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>; background: <?= $filter !== 'pending' ? 'var(--color-surface)' : 'transparent' ?>; box-shadow: <?= $filter !== 'pending' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' ?>;">
                     <i class="fa-solid fa-layer-group"></i>
-                    <span>All Requisitions</span>
+                    <span>All Requests</span>
                 </a>
                 <a href="<?= $e($appUrl ?? '') ?>/requisitions?filter=pending" 
                    style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 1rem; font-size: 0.8125rem; font-weight: 600; text-decoration: none; border-radius: calc(var(--radius-md) - 2px); transition: all 0.15s ease; color: <?= $filter === 'pending' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>; background: <?= $filter === 'pending' ? 'var(--color-surface)' : 'transparent' ?>; box-shadow: <?= $filter === 'pending' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' ?>;">
                     <i class="fa-solid fa-clock-rotate-left"></i>
-                    <span>Pending Queue</span>
+                    <span>Waiting for Me</span>
                     <?php if (!empty($pendingCount) && $pendingCount > 0): ?>
                         <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 0.45rem; font-size: 0.6875rem; font-weight: 800; border-radius: 9999px; background: var(--color-primary); color: #ffffff;">
                             <?= (int)$pendingCount ?>
@@ -173,7 +173,7 @@ $stageName = match($primaryRole) {
                     type="text" 
                     name="search" 
                     value="<?= $e($search) ?>" 
-                    placeholder="Search by requisition # or justification..." 
+                    placeholder="Search by request number or description..." 
                     class="form-control"
                     style="width: 100%; height: 42px; padding: 0 0.875rem 0 2.5rem; font-size: 0.8125rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); outline: none; background: var(--color-surface);"
                 >
@@ -190,7 +190,7 @@ $stageName = match($primaryRole) {
                 </select>
             </div>
 
-            <!-- Actions Group (Hick's Law: 1 Primary Search CTA + Clear) -->
+            <!-- Actions Group -->
             <div class="filter-btn-group" style="display: flex; gap: 0.5rem;">
                 <button type="submit" class="btn btn-primary" style="height: 42px; padding: 0 1.25rem; font-size: 0.8125rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; border-radius: var(--radius-md); box-shadow: var(--shadow-xs);">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -212,12 +212,12 @@ $stageName = match($primaryRole) {
                 <i class="fa-solid fa-inbox"></i>
             </div>
             <h4 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.5rem 0;">
-                No Requisitions Matching Criteria
+                No Requests Found
             </h4>
             <p style="font-size: 0.875rem; color: var(--color-muted-text); max-width: 480px; margin: 0 auto 1.75rem; line-height: 1.5;">
                 <?= $filter === 'pending' 
-                    ? 'There are currently no procurement requisitions pending approval for your active governance role.' 
-                    : 'No procurement records matched your active query and filter criteria. Try adjusting your search query or reset the filters.' ?>
+                    ? 'There are currently no purchase requests waiting for your review.' 
+                    : 'No requests matched your search and filter criteria. Try searching with different terms or reset your filters.' ?>
             </p>
             <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="btn btn-outline" style="font-size: 0.8125rem; font-weight: 600; padding: 0.5rem 1.25rem; border-radius: var(--radius-md);">
                 Reset All Filters
@@ -228,12 +228,12 @@ $stageName = match($primaryRole) {
             <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.875rem; min-width: 760px;">
                 <thead>
                     <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border); text-align: left;">
-                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 14%;">Requisition #</th>
-                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 22%;">Department / Entity</th>
-                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 16%;">Requester</th>
-                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 16%;">Total Estimated Cost</th>
-                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 18%;">Governance Status</th>
-                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 12%;">Submitted</th>
+                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 14%;">Request Number</th>
+                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 22%;">Department</th>
+                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 16%;">Requested By</th>
+                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 16%;">Estimated Cost</th>
+                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 18%;">Progress</th>
+                        <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; width: 12%;">Date Sent</th>
                         <th style="padding: 1rem 1.25rem; font-weight: 700; color: var(--color-muted-text); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; text-align: right; width: 10%;">Action</th>
                     </tr>
                 </thead>
@@ -288,8 +288,8 @@ $stageName = match($primaryRole) {
 
                             <!-- Action (Fitts's Law: Tactile Button with Clear Tap Target) -->
                             <td style="padding: 1rem 1.25rem; vertical-align: middle; text-align: right; white-space: nowrap;">
-                                <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="min-height: 36px; padding: 0.4rem 0.875rem; font-size: 0.8125rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.375rem; border: 1.5px solid var(--color-primary); color: var(--color-primary); background: transparent; border-radius: var(--radius-md); transition: all 0.15s ease;" onmouseover="this.style.background='rgba(140, 0, 59, 0.08)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='transparent'; this.style.transform='none';" title="Review requisition details">
-                                    <span>Review</span>
+                                <a href="<?= $e($appUrl ?? '') ?>/requisitions/<?= (int)$r['id'] ?>" class="btn btn-outline" style="min-height: 36px; padding: 0.4rem 0.875rem; font-size: 0.8125rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.375rem; border: 1.5px solid var(--color-primary); color: var(--color-primary); background: transparent; border-radius: var(--radius-md); transition: all 0.15s ease;" onmouseover="this.style.background='rgba(140, 0, 59, 0.08)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='transparent'; this.style.transform='none';" title="View request details">
+                                    <span>View Request</span>
                                     <i class="fa-solid fa-chevron-right" style="font-size: 0.6875rem;"></i>
                                 </a>
                             </td>

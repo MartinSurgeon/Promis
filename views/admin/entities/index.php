@@ -31,10 +31,10 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <i class="fa-solid fa-building-columns"></i>
         </div>
         <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Total Entities</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Total Departments & Units</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['total_entities'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                Organizational Units
+                All Academic & Admin Units
             </div>
         </div>
     </div>
@@ -45,10 +45,10 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <i class="fa-solid fa-check-circle"></i>
         </div>
         <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Active Entities</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Active Departments & Units</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['active_entities'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                <?= (int)($metrics['inactive_entities'] ?? 0) ?> Inactive
+                <?= (int)($metrics['inactive_entities'] ?? 0) ?> Inactive Units
             </div>
         </div>
     </div>
@@ -59,10 +59,10 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Entity Types</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Unit Types</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['entity_types_count'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                Classifications
+                Faculties, Depts & Units
             </div>
         </div>
     </div>
@@ -73,10 +73,10 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <i class="fa-solid fa-sitemap"></i>
         </div>
         <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Hierarchy Depth</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">University Levels</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['max_hierarchy_depth'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                Levels Deep
+                Levels in Structure
             </div>
         </div>
     </div>
@@ -87,16 +87,16 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
         <div>
             <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.25rem;">
-                Institutional Entity Hierarchy
+                University Structure
             </h2>
             <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0;">
-                Create, organize, and manage the university's planning entities across faculties, departments, and administrative units.
+                Organize and manage university faculties, departments, and administrative units.
             </p>
         </div>
         <div>
             <button type="button" class="btn btn-primary" onclick="openModal('createEntityModal')" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-plus-circle"></i>
-                <span>Create Entity</span>
+                <span>Add Department or Unit</span>
             </button>
         </div>
     </div>
@@ -105,12 +105,12 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <form method="GET" action="<?= $e($appUrl ?? '') ?>/admin/entities" style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end;">
         <div style="flex: 1; min-width: 200px;">
             <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Search</label>
-            <input type="text" name="search" value="<?= $e($search ?? '') ?>" placeholder="Search by code or name..." class="form-input" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
+            <input type="text" name="search" value="<?= $e($search ?? '') ?>" placeholder="Search by department code or name..." class="form-input" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
         </div>
         <div style="min-width: 160px;">
-            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Entity Type</label>
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Unit Type</label>
             <select name="entity_type_id" class="form-input" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
-                <option value="">All Types</option>
+                <option value="">All Unit Types</option>
                 <?php foreach ($entityTypes as $et): ?>
                     <option value="<?= (int)$et['id'] ?>" <?= $typeFilter === (int)$et['id'] ? 'selected' : '' ?>><?= $e($et['type_name']) ?></option>
                 <?php endforeach; ?>
@@ -149,7 +149,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
         <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-sitemap" style="color: var(--color-primary);"></i>
-            Organizational Hierarchy
+            University Structure
         </h3>
         <div style="display: flex; gap: 0.5rem;">
             <button type="button" onclick="expandAllNodes()" style="background: none; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.375rem 0.75rem; font-size: 0.75rem; color: var(--color-muted-text); cursor: pointer;">
@@ -164,7 +164,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
         <?php if (empty($tree)): ?>
             <div style="text-align: center; padding: 2rem; color: var(--color-muted-text);">
                 <i class="fa-solid fa-building-circle-xmark" style="font-size: 2rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>
-                <p style="margin: 0;">No planning entities have been created yet. Click "Create Entity" to build your organizational hierarchy.</p>
+                <p style="margin: 0;">No departments or units have been created yet. Click "Add Department or Unit" to build your university structure.</p>
             </div>
         <?php else: ?>
             <?php renderTreeNodes($tree, 0, $appUrl ?? ''); ?>
@@ -247,8 +247,8 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                             data-parent-id="<?= (int)$node['id'] ?>"
                             data-parent-name="<?= htmlspecialchars($node['entity_name'] ?? '', ENT_QUOTES) ?>"
                             onclick="openCreateChildModal(this)" 
-                            title="Create Child Entity" 
-                            aria-label="Create Child Entity"
+                            title="Add Sub-Unit" 
+                            aria-label="Add Sub-Unit"
                             style="background: rgba(22, 163, 74, 0.08); border: none; padding: 0.25rem 0.375rem; color: var(--color-success); cursor: pointer; font-size: 0.8125rem; border-radius: var(--radius-sm); transition: all 0.15s ease;">
                         <i class="fa-solid fa-plus"></i>
                     </button>
@@ -271,8 +271,8 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
 <div class="card" style="padding: 0; overflow: hidden;">
     <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border);">
         <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0;">
-            Entity Directory
-            <span style="font-size: 0.8125rem; font-weight: 400; color: var(--color-muted-text); margin-left: 0.5rem;">(<?= $totalRecords ?> total)</span>
+            Departments & Units Directory
+            <span style="font-size: 0.8125rem; font-weight: 400; color: var(--color-muted-text); margin-left: 0.5rem;">(<?= $totalRecords ?> total units)</span>
         </h3>
     </div>
     <div style="overflow-x: auto;">
@@ -280,12 +280,12 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
             <thead>
                 <tr style="background: var(--color-surface-secondary);">
                     <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em; white-space: nowrap;">Code</th>
-                    <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Name</th>
+                    <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Department / Unit Name</th>
                     <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Type</th>
                     <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Campus</th>
-                    <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Parent</th>
-                    <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Head</th>
-                    <th style="padding: 0.75rem 0.75rem; text-align: center; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Users</th>
+                    <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Parent Unit</th>
+                    <th style="padding: 0.75rem 0.75rem; text-align: left; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Head of Department / Unit</th>
+                    <th style="padding: 0.75rem 0.75rem; text-align: center; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Staff Members</th>
                     <th style="padding: 0.75rem 0.75rem; text-align: center; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Status</th>
                     <th style="padding: 0.75rem 1rem; text-align: center; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.05em;">Actions</th>
                 </tr>
@@ -295,7 +295,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                     <tr>
                         <td colspan="9" style="padding: 2rem; text-align: center; color: var(--color-muted-text);">
                             <i class="fa-solid fa-search" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; opacity: 0.3;"></i>
-                            No entities match your search criteria.
+                            No departments or units match your search criteria.
                         </td>
                     </tr>
                 <?php else: ?>
@@ -350,12 +350,11 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                                             aria-label="View Details"
                                             style="background: rgba(37, 99, 235, 0.08); border: none; padding: 0.375rem 0.5rem; color: var(--color-info); cursor: pointer; font-size: 0.875rem; border-radius: var(--radius-sm); transition: all 0.15s ease;">
                                         <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                    <button type="button" 
+                                    </                                    <button type="button" 
                                             class="entity-action-btn"
                                             onclick="openEditEntityModal(<?= (int)$entity['id'] ?>)" 
-                                            title="Edit Entity" 
-                                            aria-label="Edit Entity"
+                                            title="Edit Department / Unit" 
+                                            aria-label="Edit Department / Unit"
                                             style="background: rgba(124, 58, 237, 0.08); border: none; padding: 0.375rem 0.5rem; color: var(--color-primary); cursor: pointer; font-size: 0.875rem; border-radius: var(--radius-sm); transition: all 0.15s ease;">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
@@ -366,8 +365,8 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                                                 data-active="0"
                                                 data-name="<?= $e($entity['entity_name'] ?? '') ?>"
                                                 onclick="confirmToggleStatus(this)" 
-                                                title="Deactivate Entity" 
-                                                aria-label="Deactivate Entity"
+                                                title="Deactivate Department / Unit" 
+                                                aria-label="Deactivate Department / Unit"
                                                 style="background: rgba(220, 38, 38, 0.08); border: none; padding: 0.375rem 0.5rem; color: var(--color-danger); cursor: pointer; font-size: 0.875rem; border-radius: var(--radius-sm); transition: all 0.15s ease;">
                                             <i class="fa-solid fa-ban"></i>
                                         </button>
@@ -378,8 +377,8 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                                                 data-active="1"
                                                 data-name="<?= $e($entity['entity_name'] ?? '') ?>"
                                                 onclick="confirmToggleStatus(this)" 
-                                                title="Activate Entity" 
-                                                aria-label="Activate Entity"
+                                                title="Activate Department / Unit" 
+                                                aria-label="Activate Department / Unit"
                                                 style="background: rgba(22, 163, 74, 0.08); border: none; padding: 0.375rem 0.5rem; color: var(--color-success); cursor: pointer; font-size: 0.875rem; border-radius: var(--radius-sm); transition: all 0.15s ease;">
                                             <i class="fa-solid fa-check-circle"></i>
                                         </button>
@@ -397,7 +396,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
     <?php if ($totalPages > 1): ?>
         <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
             <span style="font-size: 0.8125rem; color: var(--color-muted-text);">
-                Page <?= $page ?> of <?= $totalPages ?> (<?= $totalRecords ?> entities)
+                Page <?= $page ?> of <?= $totalPages ?> (<?= $totalRecords ?> units)
             </span>
             <div style="display: flex; gap: 0.375rem;">
                 <?php if ($page > 1): ?>
@@ -419,7 +418,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
         <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--color-surface); z-index: 1; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
             <h3 style="margin: 0; font-size: 1.125rem; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-plus-circle" style="color: var(--color-primary);"></i>
-                <span id="createModalTitle">Create Planning Entity</span>
+                <span id="createModalTitle">Add Department or Unit</span>
             </h3>
             <button type="button" onclick="closeModal('createEntityModal')" style="background: none; border: none; font-size: 1.25rem; color: var(--color-muted-text); cursor: pointer; padding: 0.25rem;" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
@@ -434,25 +433,25 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                 <!-- Entity Code -->
                 <div>
                     <label for="create_entity_code" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                        Entity Code <span style="color: var(--color-danger);">*</span>
+                        Department / Unit Code <span style="color: var(--color-danger);">*</span>
                     </label>
-                    <input type="text" id="create_entity_code" name="entity_code" required maxlength="50" placeholder="e.g. FAC-APPLIED-SCI" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-family: 'JetBrains Mono', 'Fira Code', monospace; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
-                    <p style="margin: 0.25rem 0 0; font-size: 0.6875rem; color: var(--color-muted-text);">Unique institutional identifier. Read-only after creation.</p>
+                    <input type="text" id="create_entity_code" name="entity_code" required maxlength="50" placeholder="e.g. DEPT-CS" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-family: 'JetBrains Mono', 'Fira Code', monospace; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
+                    <p style="margin: 0.25rem 0 0; font-size: 0.6875rem; color: var(--color-muted-text);">Unique university identifier. Read-only after creation.</p>
                 </div>
 
                 <!-- Entity Name -->
                 <div>
                     <label for="create_entity_name" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                        Entity Name <span style="color: var(--color-danger);">*</span>
+                        Department / Unit Name <span style="color: var(--color-danger);">*</span>
                     </label>
-                    <input type="text" id="create_entity_name" name="entity_name" required maxlength="150" placeholder="e.g. Faculty of Applied Sciences" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
+                    <input type="text" id="create_entity_name" name="entity_name" required maxlength="150" placeholder="e.g. Department of Computer Science" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <!-- Entity Type -->
                     <div>
                         <label for="create_entity_type_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                            Entity Type <span style="color: var(--color-danger);">*</span>
+                            Unit Type <span style="color: var(--color-danger);">*</span>
                         </label>
                         <select id="create_entity_type_id" name="entity_type_id" required style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                             <option value="">Select type...</option>
@@ -479,7 +478,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                 <!-- Parent Entity -->
                 <div>
                     <label for="create_parent_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                        Parent Entity
+                        Parent Unit
                     </label>
                     <select id="create_parent_entity_id" name="parent_entity_id" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                         <option value="">— None (Top Level) —</option>
@@ -487,14 +486,14 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                             <option value="<?= (int)$pe['id'] ?>"><?= $e($pe['entity_code']) ?> — <?= $e($pe['entity_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <p style="margin: 0.25rem 0 0; font-size: 0.6875rem; color: var(--color-muted-text);">Leave blank for top-level entities (e.g., University).</p>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.6875rem; color: var(--color-muted-text);">Leave blank for top-level university units.</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <!-- Head of Entity -->
                     <div>
                         <label for="create_head_user_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                            Head of Entity
+                            Head of Department / Unit
                         </label>
                         <input type="number" id="create_head_user_id" name="head_user_id" min="1" placeholder="User ID" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                     </div>
@@ -502,7 +501,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                     <!-- Planning Officer -->
                     <div>
                         <label for="create_planning_officer_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                            Planning Officer
+                            Procurement / Planning Contact
                         </label>
                         <input type="number" id="create_planning_officer_id" name="planning_officer_id" min="1" placeholder="User ID" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                     </div>
@@ -515,7 +514,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                 </button>
                 <button type="submit" id="createEntitySubmitBtn" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-solid fa-plus-circle"></i>
-                    <span>Create Entity</span>
+                    <span>Add Department or Unit</span>
                 </button>
             </div>
         </form>
@@ -530,7 +529,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
         <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--color-surface); z-index: 1; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
             <h3 style="margin: 0; font-size: 1.125rem; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-pen-to-square" style="color: var(--color-primary);"></i>
-                Edit Planning Entity
+                Edit Department or Unit
             </h3>
             <button type="button" onclick="closeModal('editEntityModal')" style="background: none; border: none; font-size: 1.25rem; color: var(--color-muted-text); cursor: pointer; padding: 0.25rem;" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
@@ -545,7 +544,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                 <!-- Entity Code (Read-Only) -->
                 <div>
                     <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                        Entity Code <span style="font-size: 0.6875rem; color: var(--color-muted-text); font-weight: 400;">(read-only)</span>
+                        Department / Unit Code <span style="font-size: 0.6875rem; color: var(--color-muted-text); font-weight: 400;">(read-only)</span>
                     </label>
                     <input type="text" id="edit_entity_code" readonly disabled style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-secondary); color: var(--color-muted-text); font-family: 'JetBrains Mono', 'Fira Code', monospace; cursor: not-allowed;">
                 </div>
@@ -553,7 +552,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                 <!-- Entity Name -->
                 <div>
                     <label for="edit_entity_name" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                        Entity Name <span style="color: var(--color-danger);">*</span>
+                        Department / Unit Name <span style="color: var(--color-danger);">*</span>
                     </label>
                     <input type="text" id="edit_entity_name" name="entity_name" required maxlength="150" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                 </div>
@@ -562,7 +561,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                     <!-- Entity Type -->
                     <div>
                         <label for="edit_entity_type_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                            Entity Type <span style="color: var(--color-danger);">*</span>
+                            Unit Type <span style="color: var(--color-danger);">*</span>
                         </label>
                         <select id="edit_entity_type_id" name="entity_type_id" required style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                             <option value="">Select type...</option>
@@ -589,7 +588,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                 <!-- Parent Entity -->
                 <div>
                     <label for="edit_parent_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                        Parent Entity
+                        Parent Unit
                     </label>
                     <select id="edit_parent_entity_id" name="parent_entity_id" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                         <option value="">— None (Top Level) —</option>
@@ -604,7 +603,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                     <!-- Head of Entity -->
                     <div>
                         <label for="edit_head_user_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                            Head of Entity
+                            Head of Department / Unit
                         </label>
                         <input type="number" id="edit_head_user_id" name="head_user_id" min="1" placeholder="User ID" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                     </div>
@@ -612,7 +611,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
                     <!-- Planning Officer -->
                     <div>
                         <label for="edit_planning_officer_id" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-                            Planning Officer
+                            Procurement / Planning Contact
                         </label>
                         <input type="number" id="edit_planning_officer_id" name="planning_officer_id" min="1" placeholder="User ID" style="width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);">
                     </div>
@@ -640,7 +639,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
         <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--color-surface); z-index: 1; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
             <h3 style="margin: 0; font-size: 1.125rem; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-building" style="color: var(--color-primary);"></i>
-                Entity Details
+                Department / Unit Details
             </h3>
             <button type="button" onclick="closeModal('entityDetailsModal')" style="background: none; border: none; font-size: 1.25rem; color: var(--color-muted-text); cursor: pointer; padding: 0.25rem;" aria-label="Close modal">
                 <i class="fa-solid fa-xmark"></i>
@@ -649,7 +648,7 @@ function renderTreeNodes(array $nodes, int $depth, string $appUrl): void {
         <div id="entityDetailsContent" style="padding: 1.5rem;">
             <div style="text-align: center; padding: 2rem; color: var(--color-muted-text);">
                 <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
-                <p style="margin: 0.5rem 0 0;">Loading entity details...</p>
+                <p style="margin: 0.5rem 0 0;">Loading details...</p>
             </div>
         </div>
     </div>
@@ -744,7 +743,7 @@ function openCreateChildModal(target, parentName) {
         parentId = target.dataset.parentId;
         parentName = target.dataset.parentName;
     }
-    document.getElementById('createModalTitle').textContent = parentName ? 'Create Child Under ' + parentName : 'Create Child Entity';
+    document.getElementById('createModalTitle').textContent = parentName ? 'Add Sub-Unit Under ' + parentName : 'Add Sub-Unit';
     const parentSelect = document.getElementById('create_parent_entity_id');
     if (parentSelect && parentId) parentSelect.value = parentId;
     openModal('createEntityModal');
@@ -819,7 +818,7 @@ async function viewEntityDetails(entityId) {
 
         let childrenHtml = '';
         if (d.children && d.children.length > 0) {
-            childrenHtml = '<div style="margin-top:1rem;"><div style="font-size:0.8125rem;font-weight:600;color:var(--color-text);margin-bottom:0.5rem;">Direct Children</div>';
+            childrenHtml = '<div style="margin-top:1rem;"><div style="font-size:0.8125rem;font-weight:600;color:var(--color-text);margin-bottom:0.5rem;">Direct Sub-Units</div>';
             d.children.forEach(c => {
                 const cActive = Boolean(Number(c.is_active));
                 childrenHtml += '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.375rem 0;border-bottom:1px solid var(--color-border);font-size:0.8125rem;">'
@@ -855,23 +854,23 @@ async function viewEntityDetails(entityId) {
                     <div style="font-size:0.8125rem;color:var(--color-text);">${e.campus_name||'—'}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Parent</div>
+                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Parent Unit</div>
                     <div style="font-size:0.8125rem;color:var(--color-text);">${e.parent_entity_name || '— Top Level —'}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Head</div>
+                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Head of Department / Unit</div>
                     <div style="font-size:0.8125rem;color:var(--color-text);">${e.head_user_name && e.head_user_name.trim() ? e.head_user_name : '—'}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Planning Officer</div>
+                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Procurement / Planning Contact</div>
                     <div style="font-size:0.8125rem;color:var(--color-text);">${e.planning_officer_name && e.planning_officer_name.trim() ? e.planning_officer_name : '—'}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Descendants</div>
+                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Sub-Units</div>
                     <div style="font-size:0.8125rem;color:var(--color-text);">${d.descendant_count||0}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Assigned Users</div>
+                    <div style="font-size:0.6875rem;font-weight:600;color:var(--color-muted-text);text-transform:uppercase;letter-spacing:0.05em;">Assigned Staff</div>
                     <div style="font-size:0.8125rem;color:var(--color-text);">${d.assigned_users||0}</div>
                 </div>
             </div>
@@ -888,14 +887,14 @@ function confirmToggleStatus(target, activate, entityName) {
     if (typeof target === 'object' && target !== null && target.dataset) {
         entityId = target.dataset.id;
         activate = target.dataset.active === '1' || target.dataset.active === 'true' || target.dataset.active === true;
-        entityName = target.dataset.name || 'this entity';
+        entityName = target.dataset.name || 'this department or unit';
     }
 
     const action = activate ? 'activate' : 'deactivate';
     let message = `Are you sure you want to ${action} "${entityName}"?`;
 
     if (!activate) {
-        message += '\n\nNote: Child entities will NOT be automatically deactivated. You can manage them individually.';
+        message += '\n\nNote: Sub-units will NOT be automatically deactivated. You can manage them individually.';
     }
 
     if (confirm(message)) {
@@ -910,7 +909,7 @@ function confirmToggleStatus(target, activate, entityName) {
 document.getElementById('createEntityForm').addEventListener('submit', function(e) {
     const btn = document.getElementById('createEntitySubmitBtn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
 });
 
 document.getElementById('editEntityForm').addEventListener('submit', function(e) {

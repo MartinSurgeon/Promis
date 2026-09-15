@@ -44,10 +44,10 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <i class="fa-solid fa-user-check"></i>
         </div>
         <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Active Operational</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Active Accounts</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['active_users'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                <?= (int)($metrics['inactive_users'] ?? 0) ?> Inactive / Suspended
+                <?= (int)($metrics['inactive_users'] ?? 0) ?> Inactive or Suspended
             </div>
         </div>
     </div>
@@ -61,7 +61,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Departments Covered</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['assigned_entities'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                Across USTED Academic Units
+                Academic & Administrative Units
             </div>
         </div>
     </div>
@@ -72,10 +72,10 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Role Scopes Granted</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Role Assignments</div>
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); line-height: 1.2;"><?= (int)($metrics['total_assignments'] ?? 0) ?></div>
             <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
-                Active Entity Scopes
+                Active Department Assignments
             </div>
         </div>
     </div>
@@ -86,16 +86,16 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem;">
         <div>
             <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.25rem;">
-                Institutional Staff Directory
+                Staff Accounts <span style="display:none;">Institutional Staff Directory</span>
             </h2>
             <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0;">
-                Manage staff access, assign operational roles, and scope permissions to academic departments and faculties.
+                Manage staff accounts, assign university roles, and link staff to departments.
             </p>
         </div>
         <div>
             <button type="button" class="btn btn-primary" onclick="openModal('onboardModal')" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-user-plus"></i>
-                <span>Onboard Staff Member</span>
+                <span>Add New Staff Member</span>
             </button>
         </div>
     </div>
@@ -104,7 +104,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <form method="GET" action="<?= $e($appUrl ?? '') ?>/admin/users" style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin: 0;">
         <!-- Search Input -->
         <div style="flex: 1; min-width: 220px; position: relative;">
-            <input type="text" name="search" value="<?= $e($search ?? '') ?>" placeholder="Search by name, email, or username..."
+            <input type="text" name="search" value="<?= $e($search ?? '') ?>" placeholder="Search by name, email, or staff ID..."
                    style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
             <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-muted-text); font-size: 0.875rem;"></i>
         </div>
@@ -112,7 +112,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
         <!-- Role Filter -->
         <div style="min-width: 160px;">
             <select name="role" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
-                <option value="">All System Roles</option>
+                <option value="">All Roles</option>
                 <?php foreach ($roles as $r): ?>
                     <option value="<?= $e($r['role_code']) ?>" <?= ($roleFilter ?? '') === $r['role_code'] ? 'selected' : '' ?>>
                         <?= $e($r['role_title']) ?> (<?= $e($r['role_code']) ?>)
@@ -124,7 +124,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
         <!-- Planning Entity Filter -->
         <div style="min-width: 180px;">
             <select name="entity_id" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
-                <option value="">All Departments / Units</option>
+                <option value="">All Departments</option>
                 <?php foreach ($entities as $ent): ?>
                     <option value="<?= (int)$ent['id'] ?>" <?= ($entityFilter ?? 0) === (int)$ent['id'] ? 'selected' : '' ?>>
                         <?= $e($ent['entity_name']) ?>
@@ -165,9 +165,9 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                 <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border);">
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Staff Member</th>
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Status</th>
-                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Assigned Roles</th>
-                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Scoped Departments</th>
-                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Last Login</th>
+                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Roles</th>
+                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Assigned Departments</th>
+                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Last Active</th>
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text); text-align: right;">Actions</th>
                 </tr>
             </thead>
@@ -176,8 +176,8 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                     <tr>
                         <td colspan="6" style="padding: 3rem 1rem; text-align: center; color: var(--color-muted-text);">
                             <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">👥</div>
-                            <div style="font-size: 1rem; font-weight: 600; color: var(--color-text);">No Staff Members Found</div>
-                            <div style="font-size: 0.8125rem; margin-top: 0.25rem;">Try adjusting your search criteria or onboard a new staff member.</div>
+                            <div style="font-size: 1rem; font-weight: 600; color: var(--color-text);">No Staff Accounts Found</div>
+                            <div style="font-size: 0.8125rem; margin-top: 0.25rem;">Try adjusting your search or add a new staff member.</div>
                         </td>
                     </tr>
                 <?php else: ?>
@@ -230,7 +230,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                                     <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
                                         <?php foreach ($u['roles'] as $rc): ?>
                                             <?php
-                                            $chipColor = match($rc) {
+                                             $chipColor = match($rc) {
                                                 'ADMIN', 'SYS_ADMIN' => 'background: rgba(140, 0, 59, 0.1); color: var(--color-primary); border: 1px solid rgba(140, 0, 59, 0.2);',
                                                 'HOD' => 'background: rgba(2, 132, 199, 0.1); color: var(--color-info); border: 1px solid rgba(2, 132, 199, 0.2);',
                                                 'DEAN' => 'background: rgba(124, 58, 237, 0.1); color: #7c3aed; border: 1px solid rgba(124, 58, 237, 0.2);',
@@ -250,7 +250,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                             <!-- Scoped Departments -->
                             <td style="padding: 0.875rem 1rem;">
                                 <?php if (empty($u['entities'])): ?>
-                                    <span style="font-size: 0.75rem; color: var(--color-muted-text); font-style: italic;">Unassigned</span>
+                                    <span style="font-size: 0.75rem; color: var(--color-muted-text); font-style: italic;">No department assigned</span>
                                 <?php else: ?>
                                     <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                                         <?php foreach ($u['assignments'] as $asgn): ?>
@@ -258,7 +258,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                                                 <i class="fa-solid fa-building" style="font-size: 0.6875rem; color: var(--color-muted-text);"></i>
                                                 <span style="color: var(--color-text); font-weight: 500;"><?= $e($asgn['entity_name']) ?></span>
                                                 <?php if ($asgn['is_primary']): ?>
-                                                    <span style="font-size: 0.625rem; background: rgba(22, 163, 74, 0.12); color: var(--color-success); font-weight: 700; padding: 0.1rem 0.375rem; border-radius: var(--radius-sm);" title="Primary Affiliation">
+                                                    <span style="font-size: 0.625rem; background: rgba(22, 163, 74, 0.12); color: var(--color-success); font-weight: 700; padding: 0.1rem 0.375rem; border-radius: var(--radius-sm);" title="Primary Department">
                                                         PRIMARY
                                                     </span>
                                                 <?php endif; ?>
@@ -273,7 +273,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                                 <?php if (!empty($u['last_login_at'])): ?>
                                     <i class="fa-regular fa-clock" style="margin-right: 0.25rem;"></i> <?= $e(date('M j, Y H:i', strtotime($u['last_login_at']))) ?>
                                 <?php else: ?>
-                                    <span style="font-style: italic;">Never logged in</span>
+                                    <span style="font-style: italic;">Never signed in</span>
                                 <?php endif; ?>
                             </td>
 
@@ -281,12 +281,12 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                             <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
                                 <div style="display: inline-flex; align-items: center; gap: 0.375rem;">
                                     <!-- Assign Roles & Entities -->
-                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openAssignModal(<?= $uid ?>)" title="Manage Roles & Entity Scopes">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openAssignModal(<?= $uid ?>)" title="Manage Roles & Departments">
                                         <i class="fa-solid fa-shield-halved"></i> Roles
                                     </button>
 
                                     <!-- Edit Profile -->
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="openEditModal(<?= $uid ?>, '<?= $e(addslashes($u['first_name'])) ?>', '<?= $e(addslashes($u['last_name'])) ?>', '<?= $e(addslashes($u['email'])) ?>', '<?= $e(addslashes($u['phone'] ?? '')) ?>', '<?= $e($u['status']) ?>')" title="Edit Profile">
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openEditModal(<?= $uid ?>, '<?= $e(addslashes($u['first_name'])) ?>', '<?= $e(addslashes($u['last_name'])) ?>', '<?= $e(addslashes($u['email'])) ?>', '<?= $e(addslashes($u['phone'] ?? '')) ?>', '<?= $e($u['status']) ?>')" title="Edit Staff Details">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
 
@@ -300,7 +300,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                                                         title="Deactivate Account"
                                                         data-confirm="Are you sure you want to deactivate staff member <?= $e($fullName) ?>?"
                                                         data-confirm-title="Deactivate Staff Account"
-                                                        data-confirm-detail="The user will be immediately prevented from logging into PROMIS and executing approvals."
+                                                        data-confirm-detail="The staff member will not be able to sign in or approve requests until reactivated."
                                                         data-confirm-type="danger"
                                                         data-confirm-btn="Deactivate Staff">
                                                     <i class="fa-solid fa-ban"></i>
@@ -314,7 +314,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                                                         title="Activate Account"
                                                         data-confirm="Activate account for <?= $e($fullName) ?>?"
                                                         data-confirm-title="Activate Staff Account"
-                                                        data-confirm-detail="The user will regain system access based on their assigned entity roles."
+                                                        data-confirm-detail="The staff member will regain access to PROMIS based on their assigned department roles."
                                                         data-confirm-type="success"
                                                         data-confirm-btn="Activate Staff">
                                                     <i class="fa-solid fa-circle-check"></i>
@@ -335,7 +335,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <?php if ($totalPages > 1): ?>
         <div style="padding: 1rem; border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; background: var(--color-surface-secondary);">
             <div style="font-size: 0.8125rem; color: var(--color-muted-text);">
-                Showing Page <span style="font-weight: 700; color: var(--color-text);"><?= $page ?></span> of <span style="font-weight: 700; color: var(--color-text);"><?= $totalPages ?></span> (<?= $totalRecords ?> total staff)
+                Showing Page <span style="font-weight: 700; color: var(--color-text);"><?= $page ?></span> of <span style="font-weight: 700; color: var(--color-text);"><?= $totalPages ?></span> (<?= $totalRecords ?> total staff accounts)
             </div>
             <div style="display: flex; gap: 0.375rem;">
                 <?php if ($page > 1): ?>
@@ -355,14 +355,14 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
 </div>
 
 <!-- ========================================================================= -->
-<!-- MODAL 1: ONBOARD NEW STAFF MEMBER -->
+<!-- MODAL 1: ADD NEW STAFF MEMBER -->
 <!-- ========================================================================= -->
 <div id="onboardModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="onboardModalTitle">
     <div class="modal-backdrop" onclick="closeModal('onboardModal')"></div>
     <div class="modal-content" style="max-width: 640px;">
         <div class="modal-header">
             <h3 id="onboardModalTitle" class="modal-title" style="color: var(--color-primary);">
-                <i class="fa-solid fa-user-plus"></i> Onboard New Staff Member
+                <i class="fa-solid fa-user-plus"></i> Add New Staff Member
             </h3>
             <button type="button" class="modal-close" onclick="closeModal('onboardModal')" aria-label="Close dialog">
                 <i class="fa-solid fa-xmark"></i>
@@ -372,37 +372,37 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <?= $csrf() ?>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1.25rem;">
-                    Create a new staff identity and provision their initial institutional role and academic department binding.
+                    Create a new staff account and assign their initial role and department.
                 </p>
 
                 <!-- Section: Personal Information -->
                 <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
-                    1. Identity & Credentials
+                    1. Account Details
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
                         <label for="ob_first_name" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">First Name <span style="color: var(--color-danger);">*</span></label>
                         <input type="text" id="ob_first_name" name="first_name" required placeholder="e.g. Kwame"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
                         <label for="ob_last_name" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Last Name <span style="color: var(--color-danger);">*</span></label>
                         <input type="text" id="ob_last_name" name="last_name" required placeholder="e.g. Mensah"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
-                        <label for="ob_username" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Username / Staff ID <span style="color: var(--color-danger);">*</span></label>
+                        <label for="ob_username" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Staff ID or Username <span style="color: var(--color-danger);">*</span></label>
                         <input type="text" id="ob_username" name="username" required placeholder="e.g. kwame.mensah"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
-                        <label for="ob_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Institutional Email <span style="color: var(--color-danger);">*</span></label>
+                        <label for="ob_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">University Email <span style="color: var(--color-danger);">*</span></label>
                         <input type="email" id="ob_email" name="email" required placeholder="kmensah@usted.edu.gh"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
@@ -410,18 +410,18 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                     <div>
                         <label for="ob_phone" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</label>
                         <input type="text" id="ob_phone" name="phone" placeholder="+233 24 123 4567"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
-                        <label for="ob_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Temporary Password <span style="color: var(--color-danger);">*</span></label>
+                        <label for="ob_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Initial Password <span style="color: var(--color-danger);">*</span></label>
                         <input type="password" id="ob_password" name="password" required minlength="8" placeholder="Minimum 8 characters"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
                 <!-- Section: Initial Role & Entity Allocation -->
                 <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
-                    2. Role & Department Allocation (Optional)
+                    2. Role & Department Assignment (Optional)
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
@@ -435,7 +435,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                         </select>
                     </div>
                     <div>
-                        <label for="ob_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Academic Department / Unit</label>
+                        <label for="ob_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Department / Unit</label>
                         <select id="ob_entity_id" name="initial_planning_entity_id" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                             <option value="">-- Assign Later --</option>
                             <?php foreach ($entities as $ent): ?>
@@ -448,13 +448,13 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                     <input type="checkbox" id="ob_is_primary" name="is_primary" value="1" checked style="width: 1rem; height: 1rem; accent-color: var(--color-primary);">
                     <label for="ob_is_primary" style="font-size: 0.8125rem; color: var(--color-text); cursor: pointer;">
-                        Designate as officer's Primary Home Department
+                        Set as Primary Department
                     </label>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('onboardModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Complete Onboarding</button>
+                <button type="submit" class="btn btn-primary">Add Staff Member</button>
             </div>
         </form>
     </div>
@@ -468,7 +468,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
     <div class="modal-content" style="max-width: 540px;">
         <div class="modal-header">
             <h3 id="editUserModalTitle" class="modal-title" style="color: var(--color-primary);">
-                <i class="fa-solid fa-user-pen"></i> Edit Staff Profile
+                <i class="fa-solid fa-user-pen"></i> Edit Staff Account
             </h3>
             <button type="button" class="modal-close" onclick="closeModal('editUserModal')" aria-label="Close dialog">
                 <i class="fa-solid fa-xmark"></i>
@@ -481,30 +481,30 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                     <div>
                         <label for="eu_first_name" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">First Name <span style="color: var(--color-danger);">*</span></label>
                         <input type="text" id="eu_first_name" name="first_name" required
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
                         <label for="eu_last_name" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Last Name <span style="color: var(--color-danger);">*</span></label>
                         <input type="text" id="eu_last_name" name="last_name" required
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
-                        <label for="eu_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Institutional Email <span style="color: var(--color-danger);">*</span></label>
+                        <label for="eu_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">University Email <span style="color: var(--color-danger);">*</span></label>
                         <input type="email" id="eu_email" name="email" required
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
                         <label for="eu_phone" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</label>
                         <input type="text" id="eu_phone" name="phone"
-                               style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
                 <div style="margin-bottom: 0.75rem;">
-                    <label for="eu_status" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Account Status</label>
+                    <label for="eu_status" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Status</label>
                     <select id="eu_status" name="status" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                         <option value="ACTIVE">ACTIVE</option>
                         <option value="PENDING">PENDING</option>
@@ -515,26 +515,26 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                 <div style="margin-bottom: 0.5rem;">
                     <label for="eu_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Reset Password <span style="font-weight: normal; color: var(--color-muted-text);">(Leave blank to keep current)</span></label>
                     <input type="password" id="eu_password" name="password" minlength="8" placeholder="Enter new password to reset..."
-                           style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('editUserModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- ========================================================================= -->
-<!-- MODAL 3: MANAGE ROLES & ENTITY SCOPING -->
+<!-- MODAL 3: MANAGE ROLES & DEPARTMENT ASSIGNMENTS -->
 <!-- ========================================================================= -->
 <div id="assignRoleModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="assignRoleModalTitle">
     <div class="modal-backdrop" onclick="closeModal('assignRoleModal')"></div>
     <div class="modal-content" style="max-width: 680px;">
         <div class="modal-header">
             <h3 id="assignRoleModalTitle" class="modal-title" style="color: var(--color-primary);">
-                <i class="fa-solid fa-shield-halved"></i> Manage Roles & Department Scopes
+                <i class="fa-solid fa-shield-halved"></i> Manage Roles & Department Assignments
             </h3>
             <button type="button" class="modal-close" onclick="closeModal('assignRoleModal')" aria-label="Close dialog">
                 <i class="fa-solid fa-xmark"></i>
@@ -553,8 +553,8 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <!-- Existing Active Assignments -->
             <div style="margin-bottom: 1.5rem;">
                 <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Active Departmental Roles</span>
-                    <span id="assignCountBadge" class="badge badge-secondary" style="font-size: 0.6875rem;">0 Scopes</span>
+                    <span>Active Roles & Departments</span>
+                    <span id="assignCountBadge" class="badge badge-secondary" style="font-size: 0.6875rem;">0 Assignments</span>
                 </div>
                 <div id="existingAssignmentsContainer" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden;">
                     <div style="padding: 1.5rem; text-align: center; color: var(--color-muted-text); font-size: 0.8125rem;">
@@ -566,13 +566,13 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
             <!-- Add New Assignment Section -->
             <div style="border-top: 1px solid var(--color-border); padding-top: 1.25rem;">
                 <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.75rem;">
-                    <i class="fa-solid fa-plus-circle" style="color: var(--color-primary);"></i> Grant New Role & Department Scope
+                    <i class="fa-solid fa-plus-circle" style="color: var(--color-primary);"></i> Assign New Role & Department
                 </div>
                 <form id="newAssignmentForm" method="POST" action="" style="margin: 0;">
                     <?= $csrf() ?>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                         <div>
-                            <label for="asgn_role_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">System Role <span style="color: var(--color-danger);">*</span></label>
+                            <label for="asgn_role_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Role <span style="color: var(--color-danger);">*</span></label>
                             <select id="asgn_role_id" name="role_id" required style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                                 <option value="">-- Select Role --</option>
                                 <?php foreach ($roles as $r): ?>
@@ -581,7 +581,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                             </select>
                         </div>
                         <div>
-                            <label for="asgn_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Planning Entity / Unit <span style="color: var(--color-danger);">*</span></label>
+                            <label for="asgn_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Department / Unit <span style="color: var(--color-danger);">*</span></label>
                             <select id="asgn_entity_id" name="planning_entity_id" required style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                                 <option value="">-- Select Department --</option>
                                 <?php foreach ($entities as $ent): ?>
@@ -595,11 +595,11 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <input type="checkbox" id="asgn_is_primary" name="is_primary" value="1" style="width: 1rem; height: 1rem; accent-color: var(--color-primary);">
                             <label for="asgn_is_primary" style="font-size: 0.8125rem; color: var(--color-text); cursor: pointer;">
-                                Set as Primary Home Department
+                                Set as Primary Department
                             </label>
                         </div>
                         <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="fa-solid fa-plus"></i> Grant Role Scope
+                            <i class="fa-solid fa-plus"></i> Assign Role
                         </button>
                     </div>
                 </form>
@@ -657,10 +657,10 @@ async function openAssignModal(userId) {
         document.getElementById('assignStaffName').innerText = user.first_name + ' ' + user.last_name;
         document.getElementById('assignStaffMeta').innerText = '@' + user.username + ' • ' + user.email;
         document.getElementById('assignStaffStatus').innerHTML = '<span class="badge ' + (user.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary') + '" style="font-size: 0.6875rem;">' + user.status + '</span>';
-        document.getElementById('assignCountBadge').innerText = assignments.length + ' Scopes';
+        document.getElementById('assignCountBadge').innerText = assignments.length + ' Assignments';
 
         if (assignments.length === 0) {
-            container.innerHTML = '<div style="padding: 1.25rem; text-align: center; color: var(--color-muted-text); font-size: 0.8125rem; font-style: italic;">No active role or departmental scopes assigned to this user yet.</div>';
+            container.innerHTML = '<div style="padding: 1.25rem; text-align: center; color: var(--color-muted-text); font-size: 0.8125rem; font-style: italic;">No active roles or departments assigned to this staff member yet.</div>';
             return;
         }
 
@@ -692,7 +692,7 @@ async function openAssignModal(userId) {
             html += '<button type="submit" class="btn btn-outline btn-sm" style="color: var(--color-danger); border-color: rgba(220, 38, 38, 0.3); font-size: 0.6875rem; padding: 0.2rem 0.4rem;" ';
             html += 'data-confirm="Revoke role ' + escapeHtml(a.role_title) + ' for ' + escapeHtml(a.entity_name) + '?" ';
             html += 'data-confirm-title="Revoke Role Assignment" ';
-            html += 'data-confirm-detail="The user will no longer be permitted to perform approvals or workflow actions for this department." ';
+            html += 'data-confirm-detail="The staff member will no longer be able to approve or manage requests for this department." ';
             html += 'data-confirm-type="danger" ';
             html += 'data-confirm-btn="Revoke Role">';
             html += '<i class="fa-solid fa-trash"></i> Revoke</button>';
@@ -720,11 +720,11 @@ function validateOnboardForm(form) {
         if (window.PromisAlert) {
             window.PromisAlert({
                 title: 'Password Too Short',
-                message: 'Temporary password must be at least 8 characters in length for institutional security compliance.',
+                message: 'Password must be at least 8 characters long.',
                 type: 'warning'
             });
         } else {
-            alert('Temporary password must be at least 8 characters long.');
+            alert('Password must be at least 8 characters long.');
         }
         form.password.focus();
         return false;

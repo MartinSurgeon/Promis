@@ -89,7 +89,7 @@ if ($pendingBadge === null && !empty($roles)) {
             <li style="margin-bottom: 0.25rem;">
                 <a href="<?= $e($appUrl ?? '') ?>/requisitions" class="nav-item <?= $active === 'requisitions' ? 'active' : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: <?= $active === 'requisitions' ? '600' : '500' ?>; color: <?= $active === 'requisitions' ? 'var(--color-primary)' : 'var(--color-text)' ?>; background: <?= $active === 'requisitions' ? 'rgba(140, 0, 59, 0.08)' : 'transparent' ?>; border-left: <?= $active === 'requisitions' ? '3px solid var(--color-primary)' : '3px solid transparent' ?>; transition: all 0.15s ease;">
                     <i class="fa-solid fa-file-invoice-dollar" style="width: 1.25rem; text-align: center; color: <?= $active === 'requisitions' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>;"></i>
-                    <span>Requisitions</span>
+                    <span>Purchase Requests</span>
                 </a>
             </li>
 
@@ -98,7 +98,7 @@ if ($pendingBadge === null && !empty($roles)) {
                     <a href="<?= $e($appUrl ?? '') ?>/requisitions?filter=pending" class="nav-item <?= $active === 'approvals' ? 'active' : '' ?>" style="display: flex; align-items: center; justify-content: space-between; padding: 0.625rem 0.875rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: <?= $active === 'approvals' ? '600' : '500' ?>; color: <?= $active === 'approvals' ? 'var(--color-primary)' : 'var(--color-text)' ?>; background: <?= $active === 'approvals' ? 'rgba(140, 0, 59, 0.08)' : 'transparent' ?>; border-left: <?= $active === 'approvals' ? '3px solid var(--color-primary)' : '3px solid transparent' ?>; transition: all 0.15s ease;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <i class="fa-solid fa-stamp" style="width: 1.25rem; text-align: center; color: <?= $active === 'approvals' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>;"></i>
-                            <span>Approval Queues</span>
+                            <span>Requests Waiting for Me</span>
                         </div>
                         <?php if (!empty($pendingBadge) && $pendingBadge > 0): ?>
                             <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 0.375rem; font-size: 0.6875rem; font-weight: 700; border-radius: 10px; background: var(--color-primary); color: #ffffff; box-shadow: var(--shadow-sm);">
@@ -112,7 +112,7 @@ if ($pendingBadge === null && !empty($roles)) {
 
         <?php if ($isFinance || $isProcurement || $isAdmin): ?>
             <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted-text); padding: 1.25rem 0.75rem 0.25rem;">
-                Governance & Finance
+                Finance & Purchases
             </div>
 
             <ul style="list-style: none; padding: 0; margin: 0;">
@@ -120,7 +120,7 @@ if ($pendingBadge === null && !empty($roles)) {
                     <li style="margin-bottom: 0.25rem;">
                         <a href="<?= $e($appUrl ?? '') ?>/dashboard#budget" class="nav-item <?= $active === 'budget' ? 'active' : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--color-text);">
                             <i class="fa-solid fa-vault" style="width: 1.25rem; text-align: center; color: var(--color-muted-text);"></i>
-                            <span>Budget Allocation</span>
+                            <span>Department Budgets</span>
                         </a>
                     </li>
                 <?php endif; ?>
@@ -129,7 +129,7 @@ if ($pendingBadge === null && !empty($roles)) {
                     <li style="margin-bottom: 0.25rem;">
                         <a href="<?= $e($appUrl ?? '') ?>/requisitions?stage=PROCUREMENT_RECEIPT" class="nav-item <?= $active === 'procurement' ? 'active' : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--color-text);">
                             <i class="fa-solid fa-boxes-packing" style="width: 1.25rem; text-align: center; color: var(--color-muted-text);"></i>
-                            <span>Procurement Orders</span>
+                            <span>Purchases & Deliveries</span>
                         </a>
                     </li>
                 <?php endif; ?>
@@ -145,19 +145,19 @@ if ($pendingBadge === null && !empty($roles)) {
                 <li style="margin-bottom: 0.25rem;">
                     <a href="<?= $e($appUrl ?? '') ?>/admin/users" class="nav-item <?= $active === 'admin_users' ? 'active' : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: <?= $active === 'admin_users' ? '600' : '500' ?>; color: <?= $active === 'admin_users' ? 'var(--color-primary)' : 'var(--color-text)' ?>; background: <?= $active === 'admin_users' ? 'rgba(140, 0, 59, 0.08)' : 'transparent' ?>; border-left: <?= $active === 'admin_users' ? '3px solid var(--color-primary)' : '3px solid transparent' ?>; transition: all 0.15s ease;">
                         <i class="fa-solid fa-users-gear" style="width: 1.25rem; text-align: center; color: <?= $active === 'admin_users' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>;"></i>
-                        <span>User Management</span>
+                        <span>Staff Accounts</span>
                     </a>
                 </li>
                 <li style="margin-bottom: 0.25rem;">
                     <a href="<?= $e($appUrl ?? '') ?>/admin/entities" class="nav-item <?= $active === 'admin_entities' ? 'active' : '' ?>" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: <?= $active === 'admin_entities' ? '600' : '500' ?>; color: <?= $active === 'admin_entities' ? 'var(--color-primary)' : 'var(--color-text)' ?>; background: <?= $active === 'admin_entities' ? 'rgba(140, 0, 59, 0.08)' : 'transparent' ?>; border-left: <?= $active === 'admin_entities' ? '3px solid var(--color-primary)' : '3px solid transparent' ?>; transition: all 0.15s ease;">
                         <i class="fa-solid fa-sitemap" style="width: 1.25rem; text-align: center; color: <?= $active === 'admin_entities' ? 'var(--color-primary)' : 'var(--color-muted-text)' ?>;"></i>
-                        <span>Entity Management</span>
+                        <span>Departments & Units</span>
                     </a>
                 </li>
                 <li style="margin-bottom: 0.25rem;">
                     <a href="<?= $e($appUrl ?? '') ?>/dashboard#audit" class="nav-item" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius-md); text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--color-text);">
                         <i class="fa-solid fa-clipboard-list" style="width: 1.25rem; text-align: center; color: var(--color-muted-text);"></i>
-                        <span>Audit Logs</span>
+                        <span>Activity History</span>
                     </a>
                 </li>
             </ul>

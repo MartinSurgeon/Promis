@@ -13,28 +13,29 @@ $statusEnum = RequisitionStatus::tryFrom($statusStr);
 
 $canonicalSteps = [
     'DRAFT' => ['label' => 'Draft', 'icon' => 'fa-file-lines'],
-    'SUBMITTED' => ['label' => 'Submitted', 'icon' => 'fa-paper-plane'],
-    'ENDORSED' => ['label' => 'Endorsed (HOD)', 'icon' => 'fa-signature'],
-    'DEPARTMENT_APPROVED' => ['label' => 'Approved (Dean)', 'icon' => 'fa-circle-check'],
-    'COMMITMENT_AUTHORIZED' => ['label' => 'Committed (Finance)', 'icon' => 'fa-vault'],
-    'PROCUREMENT_RECEIVED' => ['label' => 'Received (Procurement)', 'icon' => 'fa-box-check'],
+    'SUBMITTED' => ['label' => 'Request Sent', 'icon' => 'fa-paper-plane'],
+    'ENDORSED' => ['label' => 'Department Review', 'icon' => 'fa-signature'],
+    'DEPARTMENT_APPROVED' => ['label' => 'Faculty Approval', 'icon' => 'fa-circle-check'],
+    'COMMITMENT_AUTHORIZED' => ['label' => 'Finance Approval', 'icon' => 'fa-vault'],
+    'PROCUREMENT_RECEIVED' => ['label' => 'Items Received', 'icon' => 'fa-box-check'],
 ];
 
 $order = ['DRAFT', 'SUBMITTED', 'ENDORSED', 'DEPARTMENT_APPROVED', 'COMMITMENT_AUTHORIZED', 'PROCUREMENT_RECEIVED'];
 $currentIndex = array_search($statusStr, $order, true);
 $isNegative = in_array($statusStr, ['RETURNED', 'REJECTED'], true);
 $status = $statusStr;
+$displayStatus = $statusEnum !== null ? $statusEnum->label() : $statusStr;
 ?>
 
 <div class="workflow-stepper-card" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
         <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-route" style="color: var(--color-primary);"></i>
-            Approval Lifecycle & Governance Pipeline
+            Request Progress
         </h3>
         <div>
-            <span class="badge badge-<?= strtolower($status) ?>" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
-                Status: <?= $e($status) ?>
+            <span class="badge badge-<?= strtolower($status) ?>" style="font-size: 0.75rem; font-weight: 700;">
+                <?= $e($displayStatus) ?>
             </span>
         </div>
     </div>
@@ -43,16 +44,16 @@ $status = $statusStr;
         <div class="alert alert-warning" style="margin-bottom: 1rem;">
             <i class="fa-solid fa-rotate-left alert-icon"></i>
             <div>
-                <strong>Requisition Returned for Modification.</strong>
-                Review the feedback in the timeline below and make necessary updates before resubmitting.
+                <strong>Request Returned for Changes.</strong>
+                Please check the feedback below and update your request before resubmitting.
             </div>
         </div>
     <?php elseif ($status === 'REJECTED'): ?>
         <div class="alert alert-danger" style="margin-bottom: 1rem;">
             <i class="fa-solid fa-ban alert-icon"></i>
             <div>
-                <strong>Requisition Terminated / Rejected.</strong>
-                This requisition has been formally rejected and cannot proceed further.
+                <strong>Request Rejected.</strong>
+                This request was not approved and cannot proceed.
             </div>
         </div>
     <?php endif; ?>

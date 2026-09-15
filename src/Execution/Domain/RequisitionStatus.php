@@ -45,13 +45,13 @@ enum RequisitionStatus: string
     {
         return match ($this) {
             self::DRAFT => 'Draft',
-            self::SUBMITTED => 'Submitted (Pending HOD)',
-            self::ENDORSED => 'Endorsed (Pending Dean)',
-            self::DEPARTMENT_APPROVED => 'Department Approved (Pending Finance)',
-            self::COMMITMENT_AUTHORIZED => 'Commitment Authorized (Pending Procurement)',
-            self::PROCUREMENT_RECEIVED => 'Procurement Received / Complete',
-            self::RETURNED => 'Returned for Revision',
-            self::REJECTED => 'Rejected / Terminated',
+            self::SUBMITTED => 'Request Sent (Waiting for Department)',
+            self::ENDORSED => 'Department Recommended (Waiting for Faculty)',
+            self::DEPARTMENT_APPROVED => 'Faculty Approved (Waiting for Finance)',
+            self::COMMITMENT_AUTHORIZED => 'Approved for Purchase (In Purchase Processing)',
+            self::PROCUREMENT_RECEIVED => 'Items Received',
+            self::RETURNED => 'Returned for Changes',
+            self::REJECTED => 'Rejected',
         };
     }
 
@@ -62,12 +62,12 @@ enum RequisitionStatus: string
     {
         return match ($this) {
             self::DRAFT => 'Draft',
-            self::SUBMITTED => 'Submitted',
-            self::ENDORSED => 'Endorsed',
-            self::DEPARTMENT_APPROVED => 'Department Approved',
-            self::COMMITMENT_AUTHORIZED => 'Commitment Authorized',
-            self::PROCUREMENT_RECEIVED => 'Procurement Received',
-            self::RETURNED => 'Returned for Revision',
+            self::SUBMITTED => 'Request Sent',
+            self::ENDORSED => 'Department Recommended',
+            self::DEPARTMENT_APPROVED => 'Faculty Approved',
+            self::COMMITMENT_AUTHORIZED => 'Approved for Purchase',
+            self::PROCUREMENT_RECEIVED => 'Items Received',
+            self::RETURNED => 'Returned',
             self::REJECTED => 'Rejected',
         };
     }
@@ -78,14 +78,14 @@ enum RequisitionStatus: string
     public function sublabel(): string
     {
         return match ($this) {
-            self::DRAFT => 'Initial Preparation',
-            self::SUBMITTED => 'Pending HOD Endorsement',
-            self::ENDORSED => 'Pending Dean Approval',
-            self::DEPARTMENT_APPROVED => 'Pending Finance Commitment',
-            self::COMMITMENT_AUTHORIZED => 'Pending Procurement Review',
-            self::PROCUREMENT_RECEIVED => 'Governance Complete',
-            self::RETURNED => 'Action Required by Requester',
-            self::REJECTED => 'Application Terminated',
+            self::DRAFT => 'Draft Request',
+            self::SUBMITTED => 'Waiting for Department Review',
+            self::ENDORSED => 'Waiting for Faculty Approval',
+            self::DEPARTMENT_APPROVED => 'Waiting for Finance Approval',
+            self::COMMITMENT_AUTHORIZED => 'Waiting for Purchase Processing',
+            self::PROCUREMENT_RECEIVED => 'Items Received & Completed',
+            self::RETURNED => 'Needs Changes by Requester',
+            self::REJECTED => 'Request Closed',
         };
     }
 

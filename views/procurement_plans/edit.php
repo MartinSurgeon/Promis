@@ -48,13 +48,13 @@ $status = strtoupper((string)$plan['status']);
     <div class="card" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
         <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0 0 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
             <i class="fa-solid fa-building-columns" style="color: var(--color-primary);"></i>
-            <span>Plan Header Details</span>
+            <span>Department & Budget Year</span>
         </h2>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
             <div>
                 <label for="entity_name_display" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-muted-text); margin-bottom: 0.375rem;">
-                    Planning Entity
+                    Department
                 </label>
                 <input type="text" id="entity_name_display" name="entity_name_display" readonly value="<?= $e($plan['entity_name']) ?> (<?= $e($plan['entity_code']) ?>)"
                        style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-surface-secondary); color: var(--color-text); font-weight: 600;">
@@ -62,15 +62,15 @@ $status = strtoupper((string)$plan['status']);
 
             <div>
                 <label for="fiscal_year_display" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-muted-text); margin-bottom: 0.375rem;">
-                    Financial Year
+                    Budget Year
                 </label>
-                <input type="text" id="fiscal_year_display" name="fiscal_year_display" readonly value="FY <?= $e($plan['fiscal_year']) ?>"
+                <input type="text" id="fiscal_year_display" name="fiscal_year_display" readonly value="Year <?= $e($plan['fiscal_year']) ?>"
                        style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-surface-secondary); color: var(--color-text); font-weight: 600;">
             </div>
 
             <div>
                 <label for="version_number_display" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-muted-text); margin-bottom: 0.375rem;">
-                    Current Active Version
+                    Plan Version
                 </label>
                 <input type="text" id="version_number_display" name="version_number_display" readonly value="Version <?= $e($plan['version_number'] ?? '1.0') ?>"
                        style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-surface-secondary); color: var(--color-text); font-weight: 600;">
@@ -84,15 +84,15 @@ $status = strtoupper((string)$plan['status']);
             <div>
                 <h2 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-solid fa-list-check" style="color: var(--color-primary);"></i>
-                    <span>Line Items Forecast</span>
+                    <span>Planned Items & Costs</span>
                 </h2>
                 <div style="font-size: 0.8125rem; color: var(--color-muted-text); margin-top: 0.25rem;">
-                    Add, remove, or modify planned line items, specifications, and costs.
+                    Add, remove, or change items, descriptions, and estimated prices.
                 </div>
             </div>
 
             <button type="button" id="addItemBtn" class="btn btn-secondary" style="font-weight: 600; font-size: 0.8125rem; padding: 0.5rem 0.875rem;">
-                <i class="fa-solid fa-plus"></i> Add Item Line
+                <i class="fa-solid fa-plus"></i> Add Item
             </button>
         </div>
 
@@ -101,12 +101,12 @@ $status = strtoupper((string)$plan['status']);
                 <thead>
                     <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border); color: var(--color-muted-text); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
                         <th style="padding: 0.75rem 0.5rem; width: 40px; text-align: center;">#</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 170px;">Category / Package</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 170px;">Category</th>
                         <th style="padding: 0.75rem 0.5rem; min-width: 220px;">Item Description & Specifications</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 110px;">UOM</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 110px;">Unit</th>
                         <th style="padding: 0.75rem 0.5rem; width: 90px; text-align: right;">Qty</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 120px; text-align: right;">Est. Unit Cost</th>
-                        <th style="padding: 0.75rem 0.5rem; width: 130px; text-align: right;">Total Cost (GHS)</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 120px; text-align: right;">Unit Price</th>
+                        <th style="padding: 0.75rem 0.5rem; width: 130px; text-align: right;">Item Total (GHS)</th>
                         <th style="padding: 0.75rem 0.5rem; width: 90px;">Quarter</th>
                         <th style="padding: 0.75rem 0.5rem; width: 130px;">Funding Source</th>
                         <th style="padding: 0.75rem 0.5rem; width: 50px; text-align: center;"></th>
@@ -127,7 +127,7 @@ $status = strtoupper((string)$plan['status']);
 
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <span style="font-size: 0.875rem; font-weight: 700; color: var(--color-muted-text); text-transform: uppercase;">
-                    Total Estimated Plan Cost:
+                    Total Estimated Budget:
                 </span>
                 <span id="grandTotalDisplay" style="font-size: 1.375rem; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums;">
                     GHS 0.00
@@ -139,22 +139,22 @@ $status = strtoupper((string)$plan['status']);
     <!-- Actions Bar -->
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <a href="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>" class="btn btn-secondary" style="font-weight: 600;">
-            <i class="fa-solid fa-arrow-left"></i> Cancel & Return to Plan
+            <i class="fa-solid fa-arrow-left"></i> Cancel
         </a>
 
         <div style="display: flex; gap: 0.75rem;">
             <button type="submit" name="action" value="save" class="btn btn-secondary" style="font-weight: 700; padding: 0.625rem 1.25rem;">
-                <i class="fa-solid fa-floppy-disk"></i> Save Modifications
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
             </button>
 
             <button type="submit" name="action" value="submit" class="btn btn-primary" style="font-weight: 700; padding: 0.625rem 1.5rem;"
-                    data-confirm="Submit this updated Procurement Plan for institutional approval?"
-                    data-confirm-title="Submit Updated Procurement Plan"
-                    data-confirm-detail="Editing will be locked during the formal governance review."
+                    data-confirm="Are you sure you want to send this updated procurement plan for approval?"
+                    data-confirm-title="Send Plan for Approval"
+                    data-confirm-detail="Your updated plan will be sent for review."
                     data-confirm-type="primary"
-                    data-confirm-btn="Submit Plan"
+                    data-confirm-btn="Send for Approval"
                     data-confirm-icon="fa-paper-plane">
-                <i class="fa-solid fa-paper-plane"></i> Save & Submit for Approval
+                <i class="fa-solid fa-paper-plane"></i> Send Plan for Approval
             </button>
         </div>
     </div>

@@ -87,8 +87,17 @@ final class DashboardController
             };
         }
 
+        $pageTitle = match($activeTab) {
+            'hod' => 'Department Requests',
+            'dean' => 'Faculty Requests',
+            'finance' => 'Finance Requests',
+            'procurement' => 'Purchase Processing',
+            'admin' => 'System Overview',
+            default => 'My Requests',
+        };
+
         $html = View::render('dashboard/index', [
-            'title' => 'PROMIS - Operational Workflow Dashboard',
+            'title' => 'PROMIS - ' . $pageTitle,
             'user' => $user,
             'roles' => $roles,
             'isRequester' => $isRequester,
@@ -110,7 +119,7 @@ final class DashboardController
             'activeTab' => $activeTab,
             'appUrl' => $this->resolveAppUrl($request),
             'activeNav' => 'dashboard',
-            'pageTitle' => 'Operational Dashboard & Approval Queues',
+            'pageTitle' => $pageTitle,
             'breadcrumbs' => [
                 ['label' => 'Dashboard', 'url' => ''],
             ],

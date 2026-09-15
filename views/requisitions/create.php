@@ -25,21 +25,21 @@
         <div style="display: flex; align-items: center; gap: 0.875rem;">
             <a href="<?= $e($appUrl) ?>/requisitions" class="btn btn-outline" style="min-height: 40px; padding: 0.45rem 0.875rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.375rem; border-color: var(--color-border); background: var(--color-surface); text-decoration: none; border-radius: var(--radius-md);">
                 <i class="fa-solid fa-arrow-left"></i>
-                <span>Back to Requisitions</span>
+                <span>Back to Requests</span>
             </a>
             <div>
                 <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.015em; line-height: 1.2;">
-                    Make a Requisition
+                    New Purchase Request
                 </h1>
                 <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0.2rem 0 0; line-height: 1.4;">
-                    Request items against your department's approved annual procurement plan.
+                    Select items from your department's approved annual procurement plan.
                 </p>
             </div>
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.4rem 0.875rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: var(--color-muted-text);">
             <i class="fa-regular fa-calendar-check" style="color: var(--color-primary);"></i>
-            <span>Fiscal Year <?= $e((string)$fiscalYear) ?></span>
+            <span>Budget Year <?= $e((string)$fiscalYear) ?></span>
         </div>
     </div>
 
@@ -49,7 +49,7 @@
             <div>
                 <label for="entitySelect" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.375rem;">
                     <i class="fa-solid fa-building" style="color: var(--color-primary); margin-right: 0.35rem;"></i>
-                    Department / Planning Entity <span style="color: var(--color-danger);">*</span>
+                    Department <span style="color: var(--color-danger);">*</span>
                 </label>
                 <select name="entity_id" id="entitySelect" class="form-control" onchange="document.getElementById('entityFilterForm').submit();" style="width: 100%; height: 42px; padding: 0 0.875rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); cursor: pointer;">
                     <?php foreach ($authorizedEntities as $ent): ?>
@@ -59,14 +59,14 @@
                     <?php endforeach; ?>
                 </select>
                 <div style="font-size: 0.75rem; color: var(--color-muted-text); margin-top: 0.3rem;">
-                    You are authorized to author requisitions for this entity.
+                    You can make purchase requests for this department.
                 </div>
             </div>
 
             <div>
                 <label for="yearSelect" style="display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.375rem;">
                     <i class="fa-solid fa-calendar" style="color: var(--color-primary); margin-right: 0.35rem;"></i>
-                    Procurement Plan Year
+                    Budget Year
                 </label>
                 <select name="fiscal_year" id="yearSelect" class="form-control" onchange="document.getElementById('entityFilterForm').submit();" style="width: 100%; height: 42px; padding: 0 0.875rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); cursor: pointer;">
                     <?php 
@@ -91,13 +91,13 @@
                     </div>
                     <div>
                         <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-success); text-transform: uppercase; letter-spacing: 0.04em;">
-                            Active Approved Procurement Plan
+                            Approved Procurement Plan
                         </div>
                         <div style="font-size: 1.0625rem; font-weight: 800; color: var(--color-text); margin: 0.1rem 0;">
                             Plan #<?= $e($planData['plan_number']) ?> (Version <?= $e($planData['version_number']) ?>)
                         </div>
                         <div style="font-size: 0.75rem; color: var(--color-muted-text);">
-                            Approved Total Ceiling: GHS <?= number_format((float)($planData['version_total_cost'] ?? 0), 2) ?>
+                            Approved Budget Limit: GHS <?= number_format((float)($planData['version_total_cost'] ?? 0), 2) ?>
                             <?php if (!empty($planData['approval_date'])): ?>
                                 • Approved on <?= $e(date('M d, Y', strtotime($planData['approval_date']))) ?>
                             <?php endif; ?>
@@ -117,10 +117,10 @@
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.35rem;">
-                No Approved Procurement Plan for this Entity in Year <?= $e((string)$fiscalYear) ?>
+                No Approved Procurement Plan for this Department in Year <?= $e((string)$fiscalYear) ?>
             </h3>
             <p style="font-size: 0.8125rem; color: var(--color-muted-text); max-width: 600px; margin: 0 auto; line-height: 1.5;">
-                Requisitions in PROMIS must draw down against an active, approved annual procurement plan. Please ensure an annual plan is created, itemized, and formally approved, or switch to another planning entity.
+                Purchase requests in PROMIS must be based on an approved annual procurement plan. Please ensure an annual plan is created and approved, or choose another department.
             </p>
         </div>
     <?php endif; ?>
@@ -136,7 +136,7 @@
             <div class="card" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.75rem 2rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
                 <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
                     <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(140, 0, 59, 0.1); color: var(--color-primary); font-size: 0.8125rem; font-weight: 800;">1</span>
-                    Reason for Request (Justification) <span style="color: var(--color-danger);">*</span>
+                    Reason for Request <span style="color: var(--color-danger);">*</span>
                 </h3>
                 <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem; line-height: 1.4;">
                     Explain in simple, clear words why your department needs these items (e.g., "Required for 2nd semester student practicals in the computing laboratory").
@@ -148,7 +148,7 @@
                     rows="3" 
                     class="form-control" 
                     required 
-                    placeholder="Provide official operational justification for this requisition..." 
+                    placeholder="Explain why your department needs these items..." 
                     style="width: 100%; padding: 0.75rem 1rem; font-size: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); line-height: 1.5; resize: vertical;"
                 ><?= $e($old('justification', '')) ?></textarea>
             </div>
@@ -159,15 +159,15 @@
                     <div>
                         <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
                             <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(140, 0, 59, 0.1); color: var(--color-primary); font-size: 0.8125rem; font-weight: 800;">2</span>
-                            Select Items from Approved Plan
+                            Approved Items You Can Request
                         </h3>
                         <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0;">
-                            Enter the quantity you need for each item. You cannot request more than the remaining quota.
+                            Enter the quantity you need for each item. You cannot request more than the remaining budget quota.
                         </p>
                     </div>
 
                     <div style="background: var(--color-surface-secondary); padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); font-size: 0.8125rem; font-weight: 700; color: var(--color-text); text-align: right;">
-                        <span style="color: var(--color-muted-text); font-weight: 500; font-size: 0.75rem; display: block;">Estimated Grand Total</span>
+                        <span style="color: var(--color-muted-text); font-weight: 500; font-size: 0.75rem; display: block;">Total Estimated Cost</span>
                         <span style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums;" id="grandTotalDisplay">GHS 0.00</span>
                     </div>
                 </div>
@@ -180,7 +180,7 @@
                                 <th style="padding: 1rem 1.25rem; width: 45px; text-align: center;">#</th>
                                 <th style="padding: 1rem 1.25rem;">Item Description & Details</th>
                                 <th style="padding: 1rem 1.25rem; text-align: right;">Unit Price (GHS)</th>
-                                <th style="padding: 1rem 1.25rem; text-align: center;">Plan Quota Status</th>
+                                <th style="padding: 1rem 1.25rem; text-align: center;">Quota Status</th>
                                 <th style="padding: 1rem 1.25rem; width: 150px; text-align: right;">How many do you need?</th>
                                 <th style="padding: 1rem 1.25rem; text-align: right;">Item Total (GHS)</th>
                             </tr>
@@ -224,7 +224,7 @@
                                     <td style="padding: 1rem 1.25rem; text-align: right;">
                                         <input type="hidden" name="items[<?= $idx ?>][procurement_plan_item_id]" value="<?= $planItemId ?>">
                                         <input 
-                                            type="number" 
+                                             type="number" 
                                             step="0.01" 
                                             min="0" 
                                             max="<?= $remQty ?>" 
@@ -254,10 +254,10 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-text);">
-                            Ready to finalize your requisition?
+                            Ready to send your request?
                         </div>
                         <div style="font-size: 0.75rem; color: var(--color-muted-text); margin-top: 0.15rem;">
-                            Submitting starts the 4-step approval process (Head of Department &rarr; Dean &rarr; Finance &rarr; Procurement).
+                            Sending this request starts the approval process (Department &rarr; Faculty &rarr; Finance &rarr; Purchasing).
                         </div>
                     </div>
 
@@ -290,7 +290,7 @@
                             onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0, 105, 56, 0.2)'"
                         >
                             <i class="fa-solid fa-paper-plane"></i>
-                            <span>Save and Submit Requisition</span>
+                            <span>Send for Approval</span>
                         </button>
                     </div>
                 </div>

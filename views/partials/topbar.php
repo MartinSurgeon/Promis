@@ -47,7 +47,7 @@ if ($initials === '') {
                 <?php endif; ?>
             </nav>
             <div style="font-size: 0.9375rem; font-weight: 700; color: var(--color-text); line-height: 1.2;">
-                <?= $e($pageTitle ?? 'Procurement Workbench') ?>
+                <?= $e($pageTitle ?? 'My Requests') ?>
             </div>
         </div>
     </div>
@@ -64,7 +64,18 @@ if ($initials === '') {
                     <?= $e($fullName) ?>
                 </span>
                 <span style="font-size: 0.6875rem; font-weight: 600; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.04em;">
-                    <?= $e(str_replace('_', ' ', $primaryRole)) ?>
+                    <?php
+                        $roleMap = [
+                            'HOD' => 'Head of Dept',
+                            'DEAN' => 'Dean of Faculty',
+                            'REQUESTER' => 'Requester',
+                            'FINANCE_OFFICER' => 'Finance Officer',
+                            'PROCUREMENT_OFFICER' => 'Procurement Officer',
+                            'ADMIN' => 'Administrator',
+                            'SUPER_ADMIN' => 'Administrator'
+                        ];
+                        echo $e($roleMap[$primaryRole] ?? str_replace('_', ' ', $primaryRole));
+                    ?>
                 </span>
             </div>
         </div>
