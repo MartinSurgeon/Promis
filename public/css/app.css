@@ -1577,6 +1577,9 @@ td, th {
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
+  background: rgba(10, 15, 30, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1588,12 +1591,10 @@ td, th {
 }
 
 .modal-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 100001;
+  background: rgba(10, 15, 30, 0.4);
+  z-index: 1;
 }
 
 .modal-content {

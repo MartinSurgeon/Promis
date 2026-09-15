@@ -181,45 +181,65 @@ $statusBadgeClass = match($status) {
 <?php endif; ?>
 
 <!-- Return Modal Dialog -->
-<div id="returnModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
-    <div style="background: var(--color-surface); border-radius: var(--radius-lg); max-width: 500px; width: 100%; padding: 1.5rem; box-shadow: var(--shadow-lg);">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.5rem;">Return Plan for Correction</h3>
-        <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem;">
-            Provide clear feedback to the department explaining what adjustments or clarifications are required before approval.
-        </p>
-        <form method="POST" action="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>/action">
+<div id="returnModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="returnModalTitle">
+    <div class="modal-backdrop" onclick="closeModal('returnModal')"></div>
+    <div class="modal-content" style="max-width: 520px;">
+        <div class="modal-header">
+            <h3 id="returnModalTitle" class="modal-title" style="color: var(--color-warning);">
+                <i class="fa-solid fa-rotate-left"></i> Return Plan for Correction
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('returnModal')" aria-label="Close dialog">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form method="POST" action="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>/action" style="margin: 0;">
             <?= $csrf() ?>
             <input type="hidden" name="action" value="RETURN">
-            <div style="margin-bottom: 1rem;">
-                <label for="return_comments" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.375rem;">Feedback & Queries <span style="color: var(--color-danger);">*</span></label>
-                <textarea id="return_comments" name="comments" required rows="4" placeholder="Specify items needing revision, cost adjustments, or justification..."
-                          style="width: 100%; padding: 0.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text); resize: vertical;"></textarea>
+            <div class="modal-body">
+                <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem;">
+                    Provide clear feedback to the department explaining what adjustments or clarifications are required before approval.
+                </p>
+                <div style="margin-bottom: 0.5rem;">
+                    <label for="return_comments" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.375rem;">Feedback & Queries <span style="color: var(--color-danger);">*</span></label>
+                    <textarea id="return_comments" name="comments" required rows="4" placeholder="Specify items needing revision, cost adjustments, or justification..."
+                              style="width: 100%; padding: 0.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text); resize: vertical;"></textarea>
+                </div>
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('returnModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn btn-primary">Submit Return Decision</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('returnModal')">Cancel</button>
+                <button type="submit" class="btn btn-accent">Submit Return Decision</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Reject Modal Dialog -->
-<div id="rejectModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
-    <div style="background: var(--color-surface); border-radius: var(--radius-lg); max-width: 500px; width: 100%; padding: 1.5rem; box-shadow: var(--shadow-lg);">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--color-danger); margin: 0 0 0.5rem;">Reject Procurement Plan</h3>
-        <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem;">
-            Are you sure you want to reject this procurement plan? Please provide the institutional justification.
-        </p>
-        <form method="POST" action="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>/action">
+<div id="rejectModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="rejectModalTitle">
+    <div class="modal-backdrop" onclick="closeModal('rejectModal')"></div>
+    <div class="modal-content" style="max-width: 520px;">
+        <div class="modal-header">
+            <h3 id="rejectModalTitle" class="modal-title" style="color: var(--color-danger);">
+                <i class="fa-solid fa-ban"></i> Reject Procurement Plan
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('rejectModal')" aria-label="Close dialog">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form method="POST" action="<?= $e($appUrl ?? '') ?>/procurement-plans/<?= $planId ?>/action" style="margin: 0;">
             <?= $csrf() ?>
             <input type="hidden" name="action" value="REJECT">
-            <div style="margin-bottom: 1rem;">
-                <label for="reject_comments" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.375rem;">Rejection Justification <span style="color: var(--color-danger);">*</span></label>
-                <textarea id="reject_comments" name="comments" required rows="4" placeholder="Reason for rejection..."
-                          style="width: 100%; padding: 0.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text); resize: vertical;"></textarea>
+            <div class="modal-body">
+                <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1rem;">
+                    Are you sure you want to reject this procurement plan? Please provide the institutional justification.
+                </p>
+                <div style="margin-bottom: 0.5rem;">
+                    <label for="reject_comments" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.375rem;">Rejection Justification <span style="color: var(--color-danger);">*</span></label>
+                    <textarea id="reject_comments" name="comments" required rows="4" placeholder="Reason for rejection..."
+                              style="width: 100%; padding: 0.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text); resize: vertical;"></textarea>
+                </div>
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('rejectModal').style.display='none'">Cancel</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('rejectModal')">Cancel</button>
                 <button type="submit" class="btn btn-danger">Confirm Rejection</button>
             </div>
         </form>

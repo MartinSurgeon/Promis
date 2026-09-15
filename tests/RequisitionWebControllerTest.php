@@ -16,6 +16,11 @@ echo "===============================================================\n";
 
 $db = Connection::get();
 
+// Ensure clean initial state by clearing any temporary leftover test requisitions
+$db->exec("DELETE FROM requisition_items WHERE requisition_id > 4");
+$db->exec("DELETE FROM workflow_action_logs WHERE document_type = 'REQUISITION' AND document_id > 4");
+$db->exec("DELETE FROM requisitions WHERE id > 4");
+
 use Promis\Core\Auth\AuthManager;
 use Promis\Core\Security\Session;
 use Promis\Core\Security\Csrf;
