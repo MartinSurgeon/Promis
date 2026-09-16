@@ -6,7 +6,7 @@
  *
  * @var string $message Optional custom error message
  */
-$title = '401 - Unauthorized | PROMIS';
+$title = 'Please Sign In | PROMIS';
 ?>
 
 <div class="card p-8 text-center" style="max-width: 600px; margin: 4rem auto;">
@@ -14,15 +14,15 @@ $title = '401 - Unauthorized | PROMIS';
         401
     </div>
     <h1 class="text-2xl font-bold text-slate-800" style="margin-bottom: 0.75rem;">
-        Authentication Required
+        Please Sign In
     </h1>
     <p class="text-slate-600" style="margin-bottom: 2rem;">
-        <?= htmlspecialchars($message ?? 'You must be authenticated with valid credentials to access this protected procurement resource.', ENT_QUOTES, 'UTF-8') ?>
+        <?= htmlspecialchars($message ?? 'You must sign in with your staff account to access this page.', ENT_QUOTES, 'UTF-8') ?>
     </p>
     <div class="flex gap-4 justify-center">
-        <a href="<?= $e(($appUrl ?? '') . '/dashboard') ?>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem;">
-            <i class="fa-solid fa-arrow-left"></i>
-            <span>Return to Dashboard</span>
+        <a href="<?= $e(($appUrl ?? '') . '/login') ?>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem;">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span>Go to Sign In</span>
         </a>
     </div>
 </div>

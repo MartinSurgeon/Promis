@@ -12,10 +12,10 @@
 
 <div style="margin-bottom: 1.5rem; text-align: center;">
     <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.25rem;">
-        Institutional Sign In
+        Sign In
     </h2>
     <p style="font-size: 0.875rem; color: var(--color-muted-text); margin: 0;">
-        Access your procurement workbench and approval queues
+        Sign in to access your purchase requests and approvals
     </p>
 </div>
 
@@ -24,7 +24,7 @@
 
     <div class="form-group" style="margin-bottom: 1.25rem;">
         <label for="username_or_email" class="form-label" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.375rem;">
-            Institutional Username or Email <span style="color: var(--color-danger);">*</span>
+            Staff Username or Email <span style="color: var(--color-danger);">*</span>
         </label>
         <div style="position: relative;">
             <span style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--color-muted-text); font-size: 0.875rem;">
@@ -78,7 +78,7 @@
     </div>
 
     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 600; font-size: 0.9375rem; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 1.25rem;">
-        <i class="fa-solid fa-right-to-bracket" style="margin-right: 0.5rem;"></i> Sign In to Workbench
+        <i class="fa-solid fa-right-to-bracket" style="margin-right: 0.5rem;"></i> Sign In
     </button>
 </form>
 
@@ -91,25 +91,25 @@
     </a>
 </div>
 
-<!-- Evaluation & Testing Quick Credentials Panel -->
+<!-- Sample Staff Accounts for Testing Panel -->
 <div class="card" style="background: var(--color-surface-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.875rem; text-align: left;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
         <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); display: flex; align-items: center; gap: 0.375rem;">
-            <i class="fa-solid fa-flask-vial"></i> Evaluation Credentials
+            <i class="fa-solid fa-user-group"></i> Sample Staff Accounts for Testing
         </span>
         <span style="font-size: 0.6875rem; color: var(--color-muted-text); font-weight: 600;">
             Password: <code>Password123!</code>
         </span>
     </div>
     <p style="font-size: 0.75rem; color: var(--color-muted-text); margin: 0 0 0.5rem 0;">
-        Select an institutional role to quickly populate sign-in credentials:
+        Select a university role to test the system:
     </p>
     <div style="display: flex; flex-wrap: wrap; gap: 0.375rem;">
         <button type="button" class="btn btn-outline" onclick="fillCredentials('admin.user', 'Password123!')" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; background: var(--color-surface); border-radius: var(--radius-sm);" title="Role: System Administrator">
             <i class="fa-solid fa-shield-halved" style="color: var(--color-primary);"></i> Admin
         </button>
-        <button type="button" class="btn btn-outline" onclick="fillCredentials('kwame.mensah', 'Password123!')" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; background: var(--color-surface); border-radius: var(--radius-sm);" title="Role: Head of Department (HOD) / Requester">
-            <i class="fa-solid fa-user-tie" style="color: #0284c7;"></i> HOD
+        <button type="button" class="btn btn-outline" onclick="fillCredentials('kwame.mensah', 'Password123!')" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; background: var(--color-surface); border-radius: var(--radius-sm);" title="Role: Head of Department (HOD)">
+            <i class="fa-solid fa-user-tie" style="color: #0284c7;"></i> Head of Dept
         </button>
         <button type="button" class="btn btn-outline" onclick="fillCredentials('dean.user', 'Password123!')" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; background: var(--color-surface); border-radius: var(--radius-sm);" title="Role: Faculty Dean">
             <i class="fa-solid fa-graduation-cap" style="color: #7c3aed;"></i> Dean

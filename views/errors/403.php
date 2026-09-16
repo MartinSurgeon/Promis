@@ -6,7 +6,7 @@
  *
  * @var string $message Optional custom error message
  */
-$title = '403 - Forbidden | PROMIS';
+$title = 'Access Denied | PROMIS';
 ?>
 
 <div class="card p-8 text-center" style="max-width: 600px; margin: 4rem auto;">
@@ -17,7 +17,7 @@ $title = '403 - Forbidden | PROMIS';
         Access Denied
     </h1>
     <p class="text-slate-600" style="margin-bottom: 2rem;">
-        <?= htmlspecialchars($message ?? 'You do not have the required role permissions or organizational scope to perform this action.', ENT_QUOTES, 'UTF-8') ?>
+        <?= htmlspecialchars($message ?? 'You do not have permission to view this page or perform this action. If you need access, please contact your department head or system administrator.', ENT_QUOTES, 'UTF-8') ?>
     </p>
     <div class="flex gap-4 justify-center">
         <a href="<?= $e(($appUrl ?? '') . '/dashboard') ?>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem;">

@@ -324,7 +324,7 @@ final class ProcurementPlanViewController
                     comments: 'Annual Procurement Plan formulated and submitted for approval.'
                 );
 
-                Session::flash('success', "Procurement Plan {$planDto->planNumber} has been formulated and submitted for institutional review.");
+                Session::flash('success', "Procurement Plan {$planDto->planNumber} has been created and sent for approval.");
             } else {
                 $this->logWorkflowAction(
                     documentType: 'PROCUREMENT_PLAN',
@@ -337,7 +337,7 @@ final class ProcurementPlanViewController
                     comments: 'Initial baseline draft saved.'
                 );
 
-                Session::flash('success', "Procurement Plan {$planDto->planNumber} draft saved successfully.");
+                Session::flash('success', "Procurement Plan {$planDto->planNumber} saved as draft.");
             }
 
             return Response::redirect("/procurement-plans/{$planDto->id}");
@@ -558,7 +558,7 @@ final class ProcurementPlanViewController
                 );
 
                 $this->db->commit();
-                Session::flash('success', "Procurement Plan {$plan['plan_number']} updated and submitted for approval.");
+                Session::flash('success', "Procurement Plan {$plan['plan_number']} updated and sent for approval.");
             } else {
                 $this->logWorkflowAction(
                     documentType: 'PROCUREMENT_PLAN',
@@ -639,7 +639,7 @@ final class ProcurementPlanViewController
                         comments: $comments ?: 'Plan submitted for review.'
                     );
 
-                    Session::flash('success', "Procurement Plan {$plan['plan_number']} submitted for approval.");
+                    Session::flash('success', "Procurement Plan {$plan['plan_number']} sent for approval.");
                     break;
 
                 case 'UNDER_REVIEW':
@@ -660,7 +660,7 @@ final class ProcurementPlanViewController
                         comments: $comments ?: 'Plan taken up for administrative review.'
                     );
 
-                    Session::flash('info', "Plan {$plan['plan_number']} is now under review.");
+                    Session::flash('info', "Procurement Plan {$plan['plan_number']} is now under review.");
                     break;
 
                 case 'APPROVE':
@@ -691,7 +691,7 @@ final class ProcurementPlanViewController
                     );
 
                     $this->db->commit();
-                    Session::flash('success', "Procurement Plan {$plan['plan_number']} has been APPROVED. Items are now available for requisition drawdowns.");
+                    Session::flash('success', "Procurement Plan {$plan['plan_number']} has been approved. Department staff can now request items from this plan.");
                     break;
 
                 case 'RETURN':
@@ -724,7 +724,7 @@ final class ProcurementPlanViewController
                     );
 
                     $this->db->commit();
-                    Session::flash('warning', "Plan {$plan['plan_number']} returned to department for correction.");
+                    Session::flash('warning', "Procurement Plan {$plan['plan_number']} sent back to department for changes.");
                     break;
 
                 case 'REJECT':
@@ -755,7 +755,7 @@ final class ProcurementPlanViewController
                     );
 
                     $this->db->commit();
-                    Session::flash('error', "Procurement Plan {$plan['plan_number']} has been REJECTED.");
+                    Session::flash('error', "Procurement Plan {$plan['plan_number']} has been rejected.");
                     break;
 
                 default:

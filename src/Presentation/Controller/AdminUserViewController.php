@@ -64,7 +64,7 @@ final class AdminUserViewController
         $baseAppUrl = $this->resolveAppUrl($request);
 
         $html = View::render('admin/users/index', [
-            'title' => 'PROMIS - User & Entity Management',
+            'title' => 'PROMIS - Staff Accounts',
             'users' => $data['users'],
             'totalRecords' => $data['total_records'],
             'totalPages' => $data['total_pages'],
@@ -78,10 +78,10 @@ final class AdminUserViewController
             'roles' => $lookups['roles'],
             'appUrl' => $baseAppUrl,
             'activeNav' => 'admin_users',
-            'pageTitle' => 'User & Entity Management',
+            'pageTitle' => 'Staff Accounts',
             'breadcrumbs' => [
                 ['label' => 'Administration', 'url' => ''],
-                ['label' => 'User & Entity Management', 'url' => ''],
+                ['label' => 'Staff Accounts', 'url' => ''],
             ],
             'user' => AuthManager::user(),
         ], 'app');
@@ -123,7 +123,7 @@ final class AdminUserViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', "Staff member '{$dto->firstName} {$dto->lastName}' ({$dto->username}) onboarded successfully!");
+            Session::flash('success', "Staff member '{$dto->firstName} {$dto->lastName}' ({$dto->username}) added successfully.");
 
             if ($request->isJson()) {
                 return Response::json([
@@ -141,7 +141,7 @@ final class AdminUserViewController
             }
             return Response::redirect('/admin/users');
         } catch (Throwable $e) {
-            Session::flash('error', 'Failed to onboard user: ' . $e->getMessage());
+            Session::flash('error', 'Failed to add staff member: ' . $e->getMessage());
             if ($request->isJson()) {
                 return Response::json(['error' => true, 'message' => $e->getMessage()], 500);
             }
@@ -220,7 +220,8 @@ final class AdminUserViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', "Staff status updated to '{$status}'.");
+            $statusLabel = $status === 'ACTIVE' ? 'activated' : 'deactivated';
+            Session::flash('success', "Staff account {$statusLabel} successfully.");
 
             if ($request->isJson()) {
                 return Response::json(['success' => true, 'status' => $status]);
@@ -266,7 +267,7 @@ final class AdminUserViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', 'Role and Department assignment created successfully.');
+            Session::flash('success', 'Role and department assigned successfully.');
 
             if ($request->isJson()) {
                 return Response::json(['success' => true, 'message' => 'Role assigned successfully.']);
@@ -304,7 +305,7 @@ final class AdminUserViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', 'Role assignment revoked successfully.');
+            Session::flash('success', 'Role assignment removed successfully.');
 
             if ($request->isJson()) {
                 return Response::json(['success' => true, 'message' => 'Assignment revoked.']);
@@ -344,7 +345,7 @@ final class AdminUserViewController
                 userAgent: $request->userAgent()
             );
 
-            Session::flash('success', 'Primary Department updated successfully.');
+            Session::flash('success', 'Primary department updated successfully.');
 
             if ($request->isJson()) {
                 return Response::json(['success' => true, 'message' => 'Primary Department updated.']);

@@ -537,15 +537,15 @@ final class RequisitionViewController
                     ipAddress: $request->ip(),
                     userAgent: $request->userAgent()
                 ));
-                Session::flash('success', "Requisition {$dto->requisitionNumber} created and submitted for approval successfully!");
+                Session::flash('success', "Purchase request {$dto->requisitionNumber} created and sent for approval successfully!");
             } else {
-                Session::flash('success', "Requisition {$dto->requisitionNumber} created and saved as draft.");
+                Session::flash('success', "Purchase request {$dto->requisitionNumber} created and saved as draft.");
             }
 
             if ($request->isJson()) {
                 return Response::json([
                     'success' => true,
-                    'message' => "Requisition {$dto->requisitionNumber} created successfully.",
+                    'message' => "Purchase request {$dto->requisitionNumber} created successfully.",
                     'requisition_id' => $dto->id,
                     'requisition_number' => $dto->requisitionNumber,
                 ]);
@@ -563,7 +563,7 @@ final class RequisitionViewController
             Session::flash('error', $e->getMessage());
             return Response::redirect('/requisitions');
         } catch (Throwable $e) {
-            Session::flash('error', "Failed to create requisition: " . $e->getMessage());
+            Session::flash('error', "Failed to create purchase request: " . $e->getMessage());
             return Response::redirect("/requisitions/create?entity_id={$entityId}&fiscal_year={$fiscalYear}");
         }
     }
@@ -651,7 +651,7 @@ final class RequisitionViewController
         $budgetInfo = $this->resolveBudgetInfo((int)$requisition['planning_entity_id'], (int)$requisition['fiscal_year'], (string)$requisition['total_estimated_cost']);
 
         $html = View::render('requisitions/show', [
-            'title' => "PROMIS - Requisition {$requisition['requisition_number']}",
+            'title' => "PROMIS - Purchase Request {$requisition['requisition_number']}",
             'requisition' => $requisition,
             'items' => $items,
             'permittedTransitions' => $permittedTransitions,
@@ -659,9 +659,9 @@ final class RequisitionViewController
             'budgetInfo' => $budgetInfo,
             'appUrl' => $this->resolveAppUrl($request),
             'activeNav' => 'requisitions',
-            'pageTitle' => "Requisition {$requisition['requisition_number']}",
+            'pageTitle' => "Purchase Request {$requisition['requisition_number']}",
             'breadcrumbs' => [
-                ['label' => 'Requisitions', 'url' => $this->resolveAppUrl($request) . '/requisitions'],
+                ['label' => 'Purchase Requests', 'url' => $this->resolveAppUrl($request) . '/requisitions'],
                 ['label' => $requisition['requisition_number'], 'url' => ''],
             ],
         ], 'app');

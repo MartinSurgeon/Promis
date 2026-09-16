@@ -6,7 +6,7 @@
  *
  * @var string $message Optional custom error message
  */
-$title = '500 - Server Error | PROMIS';
+$title = 'Something Went Wrong | PROMIS';
 ?>
 
 <div class="card p-8 text-center" style="max-width: 600px; margin: 4rem auto;">
@@ -14,10 +14,10 @@ $title = '500 - Server Error | PROMIS';
         500
     </div>
     <h1 class="text-2xl font-bold text-slate-800" style="margin-bottom: 0.75rem;">
-        Internal System Error
+        Something Went Wrong
     </h1>
     <p class="text-slate-600" style="margin-bottom: 2rem;">
-        <?= htmlspecialchars($message ?? 'An unexpected error occurred while processing your request. The technical incident has been logged for administrative investigation.', ENT_QUOTES, 'UTF-8') ?>
+        <?= htmlspecialchars($message ?? 'An unexpected problem occurred while processing your request. Please try again or return to your dashboard.', ENT_QUOTES, 'UTF-8') ?>
     </p>
     <div class="flex gap-4 justify-center">
         <a href="<?= $e(($appUrl ?? '') . '/dashboard') ?>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem;">
