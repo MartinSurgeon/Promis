@@ -635,6 +635,15 @@ final class RequisitionViewController
         $permittedTransitions = [];
         try {
             $permittedTransitions = $this->workflowService->resolvePermittedTransitions($id, $userId);
+            // Self-approval governance: If author, ensure user possesses self-approval rights
+            if ((int)$requisition['created_by'] === $userId) {
+                $planningEntityId = (int)$requisition['planning_entity_id'];
+                $permittedTransitions = array_values(array_filter(
+                    $permittedTransitions,
+                    fn($t) => !in_array($t->action, [WorkflowAction::ENDORSE, WorkflowAction::APPROVE, WorkflowAction::RETURN, WorkflowAction::REJECT], true)
+                        || $this->workflowService->userCanSelfApprove($userId, $planningEntityId, $t->action)
+                ));
+            }
         } catch (Throwable $e) {
             // Unpermitted or unhandled edge
         }
@@ -709,6 +718,18 @@ final class RequisitionViewController
                 userAgent: $request->userAgent()
             );
 
+            // Self-approval governance guard: Author can only endorse, approve, return, or reject their own request if explicitly authorized
+            $cbyStmt = $this->db->prepare("SELECT created_by, planning_entity_id FROM requisitions WHERE id = :id LIMIT 1");
+            $cbyStmt->execute([':id' => $id]);
+            $reqRow = $cbyStmt->fetch(PDO::FETCH_ASSOC);
+            $creatorId = (int)($reqRow['created_by'] ?? 0);
+            $peId = (int)($reqRow['planning_entity_id'] ?? 0);
+            if ($creatorId === $userId && in_array($action, [WorkflowAction::ENDORSE, WorkflowAction::APPROVE, WorkflowAction::RETURN, WorkflowAction::REJECT], true)) {
+                if (!$this->workflowService->userCanSelfApprove($userId, $peId, $action)) {
+                    throw new \Promis\Src\Execution\Exception\UnauthorizedWorkflowActionException("You are not allowed to perform this action.");
+                }
+            }
+
             $result = $this->workflowService->executeAction($req);
 
             if ($request->isJson()) {
@@ -726,7 +747,10 @@ final class RequisitionViewController
             if ($request->isJson()) {
                 throw $e;
             }
-            Session::flash('error', $e->getMessage());
+            $errorMessage = ($e instanceof \Promis\Src\Execution\Exception\UnauthorizedExecutionException || $e instanceof AuthorizationException)
+                ? 'You are not allowed to perform this action.'
+                : $e->getMessage();
+            Session::flash('error', $errorMessage);
             return Response::redirect("/requisitions/{$id}");
         } catch (Throwable $e) {
             if ($request->isJson()) {

@@ -61,18 +61,18 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
         <div>
             <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.25rem 0; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-circle-check" style="color: var(--color-primary);"></i>
-                Actions You Can Take
+                Your Available Actions
             </h3>
             <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0;">
-                Actions you can take on this request right now based on your role
+                These are the actions you can take on this request.
             </p>
         </div>
 
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
             <?php if (empty($permittedTransitions)): ?>
                 <div style="font-size: 0.8125rem; color: var(--color-muted-text); background: var(--color-surface-secondary); padding: 0.5rem 0.875rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fa-solid fa-lock" style="color: var(--color-muted-text);"></i>
-                    <span>Viewing only: No action needed from you at this step.</span>
+                    <i class="fa-solid fa-circle-info" style="color: var(--color-muted-text);"></i>
+                    <span>No action is required from you at this stage.</span>
                 </div>
             <?php else: ?>
                 <?php foreach ($permittedTransitions as $transition): 
@@ -107,8 +107,8 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                                     default => 'proceed with this action',
                                 } ?>?"
                                 data-confirm-title="Confirm <?= match($act) {
-                                    'SUBMIT' => 'Send for Approval',
-                                    'ENDORSE' => 'Department Recommendation',
+                                    'SUBMIT' => 'Send Request',
+                                    'ENDORSE' => 'Recommend',
                                     'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Faculty Approval' : 'Finance Approval'),
                                     'RECEIVE' => 'Confirm Delivery',
                                     default => 'Action',
@@ -141,7 +141,7 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
                                     default => 'fa-circle-check',
                                 } ?>"></i>
                                 <span><?= match($act) {
-                                    'SUBMIT' => 'Send for Approval',
+                                    'SUBMIT' => 'Send Request',
                                     'ENDORSE' => 'Recommend',
                                     'APPROVE' => ($requisition['status'] === 'ENDORSED' ? 'Approve Request' : 'Approve for Purchase'),
                                     'RECEIVE' => 'Record Delivery',
@@ -475,5 +475,16 @@ $actionUrl = ($appUrl ?? '') . "/requisitions/{$requisitionId}/action";
     </div>
 </div>
 
-<!-- Reusable Return / Reject Action Modal -->
-<?php require dirname(__DIR__) . '/partials/return_reject_modal.php'; ?>
+<!-- Reusable Return / Reject Action Modal (Only rendered when negative actions are permitted) -->
+<?php 
+$hasNegativeAction = false;
+foreach ($permittedTransitions as $transition) {
+    if ($transition->action->isNegative()) {
+        $hasNegativeAction = true;
+        break;
+    }
+}
+if ($hasNegativeAction): ?>
+    <?php require dirname(__DIR__) . '/partials/return_reject_modal.php'; ?>
+<?php endif; ?>
+

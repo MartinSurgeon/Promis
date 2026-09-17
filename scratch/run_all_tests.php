@@ -19,6 +19,8 @@ $suites = [
     'ApprovalLifecycleGovernanceVerificationTest.php' => 41,
     'FinalEndToEndGovernanceAcceptanceTest.php' => 41,
     'RoleBasedDashboardQueueTest.php' => 55,
+    'RoleBasedActionVisibilityTest.php' => 70,
+    'StaffPositionAndRoleAssignmentTest.php' => 53,
 ];
 
 echo "===============================================================\n";

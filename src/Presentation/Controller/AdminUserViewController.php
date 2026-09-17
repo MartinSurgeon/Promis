@@ -76,6 +76,8 @@ final class AdminUserViewController
             'metrics' => $data['metrics'],
             'entities' => $lookups['entities'],
             'roles' => $lookups['roles'],
+            'positions' => $lookups['positions'],
+            'responsibilityCatalog' => $lookups['responsibilities'],
             'appUrl' => $baseAppUrl,
             'activeNav' => 'admin_users',
             'pageTitle' => 'Staff Accounts',
@@ -103,6 +105,11 @@ final class AdminUserViewController
         $actorId = (int)($actor['id'] ?? 1);
 
         try {
+            $rawResponsibilities = $request->post('responsibilities', []);
+            if (!is_array($rawResponsibilities)) {
+                $rawResponsibilities = [];
+            }
+
             $dto = CreateUserDTO::fromArray([
                 'username' => $request->post('username'),
                 'email' => $request->post('email'),
@@ -111,6 +118,9 @@ final class AdminUserViewController
                 'phone' => $request->post('phone'),
                 'password' => $request->post('password'),
                 'status' => $request->post('status', 'ACTIVE'),
+                'position_id' => $request->post('position_id'),
+                'assigned_planning_entity_id' => $request->post('assigned_planning_entity_id') ?: $request->post('initial_planning_entity_id'),
+                'responsibilities' => $rawResponsibilities,
                 'initial_role_id' => $request->post('initial_role_id'),
                 'initial_planning_entity_id' => $request->post('initial_planning_entity_id'),
                 'is_primary' => (bool)$request->post('is_primary', true),
@@ -164,6 +174,11 @@ final class AdminUserViewController
         $userId = (int)$request->param('id', 0);
 
         try {
+            $rawResponsibilities = $request->post('responsibilities', null);
+            if ($rawResponsibilities !== null && !is_array($rawResponsibilities)) {
+                $rawResponsibilities = [];
+            }
+
             $dto = UpdateUserDTO::fromArray($userId, [
                 'first_name' => $request->post('first_name'),
                 'last_name' => $request->post('last_name'),
@@ -171,6 +186,9 @@ final class AdminUserViewController
                 'phone' => $request->post('phone'),
                 'password' => $request->post('password'),
                 'status' => $request->post('status'),
+                'position_id' => $request->post('position_id'),
+                'assigned_planning_entity_id' => $request->post('assigned_planning_entity_id'),
+                'responsibilities' => $rawResponsibilities,
             ]);
 
             $this->userService->updateUser(

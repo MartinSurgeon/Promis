@@ -10,10 +10,11 @@ namespace Promis\Src\Identity\Domain\DTO;
 final class UserDTO
 {
     /**
-     * @param string[] $roles List of assigned role codes (e.g. ['HOD', 'DEAN'])
-     * @param int[] $roleIds List of assigned role IDs
+     * @param string[] $roles List of role codes
+     * @param int[] $roleIds List of role IDs
      * @param string[] $permissions List of global permission codes
      * @param array<int, string[]> $entityPermissions Map of planningEntityId => permission codes
+     * @param string[] $responsibilities List of individual assigned responsibility codes
      */
     public function __construct(
         public readonly int $id,
@@ -30,7 +31,13 @@ final class UserDTO
         public readonly array $roles = [],
         public readonly array $roleIds = [],
         public readonly array $permissions = [],
-        public readonly array $entityPermissions = []
+        public readonly array $entityPermissions = [],
+        public readonly ?int $positionId = null,
+        public readonly ?string $positionCode = null,
+        public readonly ?string $positionTitle = null,
+        public readonly ?int $assignedPlanningEntityId = null,
+        public readonly ?string $assignedEntityName = null,
+        public readonly array $responsibilities = []
     ) {
     }
 
@@ -74,6 +81,12 @@ final class UserDTO
             'permissions' => $this->permissions,
             'entity_permissions' => $this->entityPermissions,
             'primary_role' => $this->getPrimaryRole(),
+            'position_id' => $this->positionId,
+            'position_code' => $this->positionCode,
+            'position_title' => $this->positionTitle,
+            'assigned_planning_entity_id' => $this->assignedPlanningEntityId,
+            'assigned_entity_name' => $this->assignedEntityName,
+            'responsibilities' => $this->responsibilities,
         ];
     }
 
@@ -95,6 +108,12 @@ final class UserDTO
             'permissions' => $this->permissions,
             'entity_permissions' => $this->entityPermissions,
             'primary_role' => $this->getPrimaryRole(),
+            'position_id' => $this->positionId,
+            'position_code' => $this->positionCode,
+            'position_title' => $this->positionTitle,
+            'assigned_planning_entity_id' => $this->assignedPlanningEntityId,
+            'assigned_entity_name' => $this->assignedEntityName,
+            'responsibilities' => $this->responsibilities,
         ];
     }
 }

@@ -38,4 +38,19 @@ interface RequisitionWorkflowServiceInterface
      * @return WorkflowActionLogDTO[]
      */
     public function getWorkflowHistory(int $requisitionId, int $actingUserId): array;
+
+    /**
+     * Check whether a user is authorized to self-approve a requisition.
+     */
+    public function userCanSelfApprove(int $userId, int $planningEntityId, \Promis\Src\Execution\Domain\WorkflowAction $action): bool;
+
+    /**
+     * Check whether a user has an active responsibility code for an entity (or globally if entity is null).
+     */
+    public function userHasResponsibility(int $userId, string $code, ?int $planningEntityId = null): bool;
+
+    /**
+     * Check whether a user has any active individual responsibilities assigned.
+     */
+    public function userHasActiveResponsibilities(int $userId): bool;
 }

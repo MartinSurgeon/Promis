@@ -14,6 +14,8 @@
  * @var array $metrics
  * @var array $entities
  * @var array $roles
+ * @var array $positions
+ * @var array $responsibilityCatalog
  * @var string $appUrl
  * @var array|null $user
  */
@@ -165,8 +167,8 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                 <tr style="background: var(--color-surface-secondary); border-bottom: 1px solid var(--color-border);">
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Staff Member</th>
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Status</th>
-                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Roles</th>
-                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Assigned Departments</th>
+                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Position & Responsibilities</th>
+                    <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Assigned Area</th>
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text);">Last Active</th>
                     <th style="padding: 0.875rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted-text); text-align: right;">Actions</th>
                 </tr>
@@ -222,50 +224,33 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                                 </span>
                             </td>
 
-                            <!-- Assigned Roles -->
+                            <!-- Position & Assigned Responsibilities -->
                             <td style="padding: 0.875rem 1rem;">
-                                <?php if (empty($u['roles'])): ?>
-                                    <span style="font-size: 0.75rem; color: var(--color-muted-text); font-style: italic;">No roles assigned</span>
-                                <?php else: ?>
-                                    <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                                        <?php foreach ($u['roles'] as $rc): ?>
-                                            <?php
-                                             $chipColor = match($rc) {
-                                                'ADMIN', 'SYS_ADMIN' => 'background: rgba(140, 0, 59, 0.1); color: var(--color-primary); border: 1px solid rgba(140, 0, 59, 0.2);',
-                                                'HOD' => 'background: rgba(2, 132, 199, 0.1); color: var(--color-info); border: 1px solid rgba(2, 132, 199, 0.2);',
-                                                'DEAN' => 'background: rgba(124, 58, 237, 0.1); color: #7c3aed; border: 1px solid rgba(124, 58, 237, 0.2);',
-                                                'FINANCE_OFFICER' => 'background: rgba(22, 163, 74, 0.1); color: var(--color-success); border: 1px solid rgba(22, 163, 74, 0.2);',
-                                                'PROCUREMENT_OFFICER' => 'background: rgba(217, 119, 6, 0.1); color: var(--color-accent); border: 1px solid rgba(217, 119, 6, 0.2);',
-                                                default => 'background: var(--color-surface-secondary); color: var(--color-text); border: 1px solid var(--color-border);',
-                                            };
-                                            ?>
-                                            <span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.6875rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); <?= $chipColor ?>">
-                                                <i class="fa-solid fa-user-shield" style="font-size: 0.625rem;"></i> <?= $e($rc) ?>
-                                            </span>
-                                        <?php endforeach; ?>
+                                <div style="font-weight: 700; font-size: 0.875rem; color: var(--color-primary); display: flex; align-items: center; gap: 0.375rem;">
+                                    <i class="fa-solid fa-id-badge" style="font-size: 0.8125rem;"></i>
+                                    <span><?= $e($u['position_title'] ?? 'Staff Officer') ?></span>
+                                </div>
+                                <?php if (!empty($u['has_no_responsibilities'])): ?>
+                                    <div style="margin-top: 0.375rem;">
+                                        <span class="badge" style="font-size: 0.6875rem; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 0.25rem;">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> No Assigned Responsibilities
+                                        </span>
+                                    </div>
+                                <?php elseif (!empty($u['responsibilities'])): ?>
+                                    <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.25rem;">
+                                        <span style="font-weight: 600; color: var(--color-text);"><?= count($u['responsibilities']) ?></span> individual capabilities assigned
                                     </div>
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Scoped Departments -->
+                            <!-- Assigned Area -->
                             <td style="padding: 0.875rem 1rem;">
-                                <?php if (empty($u['entities'])): ?>
-                                    <span style="font-size: 0.75rem; color: var(--color-muted-text); font-style: italic;">No department assigned</span>
-                                <?php else: ?>
-                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                                        <?php foreach ($u['assignments'] as $asgn): ?>
-                                            <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem;">
-                                                <i class="fa-solid fa-building" style="font-size: 0.6875rem; color: var(--color-muted-text);"></i>
-                                                <span style="color: var(--color-text); font-weight: 500;"><?= $e($asgn['entity_name']) ?></span>
-                                                <?php if ($asgn['is_primary']): ?>
-                                                    <span style="font-size: 0.625rem; background: rgba(22, 163, 74, 0.12); color: var(--color-success); font-weight: 700; padding: 0.1rem 0.375rem; border-radius: var(--radius-sm);" title="Primary Department">
-                                                        PRIMARY
-                                                    </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
+                                <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.8125rem;">
+                                    <i class="fa-solid fa-building-columns" style="font-size: 0.75rem; color: var(--color-muted-text);"></i>
+                                    <span style="color: var(--color-text); font-weight: 600;">
+                                        <?= $e($u['assigned_entity_name'] ?? 'University Scope') ?>
+                                    </span>
+                                </div>
                             </td>
 
                             <!-- Last Login -->
@@ -359,7 +344,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
 <!-- ========================================================================= -->
 <div id="onboardModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="onboardModalTitle">
     <div class="modal-backdrop" onclick="closeModal('onboardModal')"></div>
-    <div class="modal-content" style="max-width: 640px;">
+    <div class="modal-content" style="max-width: 680px;">
         <div class="modal-header">
             <h3 id="onboardModalTitle" class="modal-title" style="color: var(--color-primary);">
                 <i class="fa-solid fa-user-plus"></i> Add New Staff Member
@@ -370,14 +355,14 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
         </div>
         <form method="POST" action="<?= $e($appUrl ?? '') ?>/admin/users" onsubmit="return validateOnboardForm(this)" style="margin: 0;">
             <?= $csrf() ?>
-            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
                 <p style="font-size: 0.8125rem; color: var(--color-muted-text); margin: 0 0 1.25rem;">
-                    Create a new staff account and assign their initial role and department.
+                    Register an official staff member, select their appointment office and assigned area, and configure their individual responsibilities.
                 </p>
 
-                <!-- Section: Personal Information -->
+                <!-- Section 1: Staff Information -->
                 <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
-                    1. Account Details
+                    1. Staff Information
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
@@ -395,61 +380,120 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
-                        <label for="ob_username" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Staff ID or Username <span style="color: var(--color-danger);">*</span></label>
+                        <label for="ob_username" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Username / Staff ID <span style="color: var(--color-danger);">*</span></label>
                         <input type="text" id="ob_username" name="username" required placeholder="e.g. kwame.mensah"
                                 style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
-                        <label for="ob_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">University Email <span style="color: var(--color-danger);">*</span></label>
+                        <label for="ob_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Email Address <span style="color: var(--color-danger);">*</span></label>
                         <input type="email" id="ob_email" name="email" required placeholder="kmensah@usted.edu.gh"
                                 style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
-                        <label for="ob_phone" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</label>
+                        <label for="ob_phone" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Phone</label>
                         <input type="text" id="ob_phone" name="phone" placeholder="+233 24 123 4567"
                                 style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                     <div>
-                        <label for="ob_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Initial Password <span style="color: var(--color-danger);">*</span></label>
-                        <input type="password" id="ob_password" name="password" required minlength="8" placeholder="Minimum 8 characters"
+                        <label for="ob_status" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Status</label>
+                        <select id="ob_status" name="status" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            <option value="ACTIVE" selected>ACTIVE</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <label for="ob_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Password <span style="color: var(--color-danger);">*</span></label>
+                        <input type="password" id="ob_password" name="password" required minlength="8" placeholder="Min 8 characters"
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                    </div>
+                    <div>
+                        <label for="ob_password_confirm" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Confirm Password <span style="color: var(--color-danger);">*</span></label>
+                        <input type="password" id="ob_password_confirm" name="password_confirm" required minlength="8" placeholder="Re-enter password"
                                 style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
                 </div>
 
-                <!-- Section: Initial Role & Entity Allocation -->
+                <!-- Section 2: Position and Assigned Area -->
                 <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
-                    2. Role & Department Assignment (Optional)
+                    2. Position & Assigned Area
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
                     <div>
-                        <label for="ob_role_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Initial Role</label>
-                        <select id="ob_role_id" name="initial_role_id" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
-                            <option value="">-- Assign Later --</option>
-                            <?php foreach ($roles as $r): ?>
-                                <option value="<?= (int)$r['id'] ?>"><?= $e($r['role_title']) ?> (<?= $e($r['role_code']) ?>)</option>
+                        <label for="ob_position_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Position <span style="color: var(--color-danger);">*</span></label>
+                        <select id="ob_position_id" name="position_id" required style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            <option value="">-- Select Position --</option>
+                            <?php foreach ($positions as $pos): 
+                                $posId = is_object($pos) ? $pos->id : $pos['id'];
+                                $posTitle = is_object($pos) ? $pos->positionTitle : $pos['position_title'];
+                            ?>
+                                <option value="<?= (int)$posId ?>"><?= $e($posTitle) ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <small style="font-size: 0.6875rem; color: var(--color-muted-text); display: block; margin-top: 0.25rem;">Official appointment held by this staff member.</small>
                     </div>
                     <div>
-                        <label for="ob_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Department / Unit</label>
-                        <select id="ob_entity_id" name="initial_planning_entity_id" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
-                            <option value="">-- Assign Later --</option>
+                        <label for="ob_assigned_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Assigned Area <span style="color: var(--color-danger);">*</span></label>
+                        <select id="ob_assigned_entity_id" name="assigned_planning_entity_id" required style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            <option value="">-- Select Organisational Area --</option>
                             <?php foreach ($entities as $ent): ?>
                                 <option value="<?= (int)$ent['id'] ?>"><?= $e($ent['entity_name']) ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <small style="font-size: 0.6875rem; color: var(--color-muted-text); display: block; margin-top: 0.25rem;">Faculty, department, or unit of assignment.</small>
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                    <input type="checkbox" id="ob_is_primary" name="is_primary" value="1" checked style="width: 1rem; height: 1rem; accent-color: var(--color-primary);">
-                    <label for="ob_is_primary" style="font-size: 0.8125rem; color: var(--color-text); cursor: pointer;">
-                        Set as Primary Department
-                    </label>
+                <!-- Section 3: Roles and Responsibilities -->
+                <div style="margin-bottom: 0.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary);">
+                                3. Assign Roles and Responsibilities
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.6875rem; padding: 0.15rem 0.5rem;" onclick="selectAllCheckboxes('onboard_resp_checkbox')">
+                                Select All
+                            </button>
+                            <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.6875rem; padding: 0.15rem 0.5rem;" onclick="clearAllCheckboxes('onboard_resp_checkbox')">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted-text); margin-bottom: 0.75rem;">
+                        What can this staff member do?
+                    </div>
+
+                    <!-- No-Responsibility Warning Banner -->
+                    <div id="onboard_no_resp_warning" style="display: none; padding: 0.625rem 0.875rem; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #92400e; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.75rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 0.375rem;"></i>
+                        ⚠ This staff member has no assigned responsibilities. They may be unable to perform operational tasks.
+                    </div>
+
+                    <!-- Responsibilities Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <?php foreach ($responsibilityCatalog as $resp): ?>
+                            <label style="display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.5rem 0.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-secondary); cursor: pointer; transition: background 0.15s ease;">
+                                <input type="checkbox" name="responsibilities[]" value="<?= $e($resp['code']) ?>" class="onboard_resp_checkbox" onchange="updateNoRespWarning('onboard')" style="margin-top: 0.2rem; width: 1rem; height: 1rem; accent-color: var(--color-primary);">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.8125rem; color: var(--color-text); line-height: 1.25;">
+                                        <?= $e($resp['label']) ?>
+                                    </div>
+                                    <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
+                                        <?= $e($resp['description']) ?>
+                                    </div>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -465,7 +509,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
 <!-- ========================================================================= -->
 <div id="editUserModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="editUserModalTitle">
     <div class="modal-backdrop" onclick="closeModal('editUserModal')"></div>
-    <div class="modal-content" style="max-width: 540px;">
+    <div class="modal-content" style="max-width: 680px;">
         <div class="modal-header">
             <h3 id="editUserModalTitle" class="modal-title" style="color: var(--color-primary);">
                 <i class="fa-solid fa-user-pen"></i> Edit Staff Account
@@ -476,7 +520,12 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
         </div>
         <form id="editUserForm" method="POST" action="" style="margin: 0;">
             <?= $csrf() ?>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                <!-- Section 1: Staff Details -->
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
+                    1. Staff Information
+                </div>
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
                         <label for="eu_first_name" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">First Name <span style="color: var(--color-danger);">*</span></label>
@@ -492,7 +541,7 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                     <div>
-                        <label for="eu_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">University Email <span style="color: var(--color-danger);">*</span></label>
+                        <label for="eu_email" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Email Address <span style="color: var(--color-danger);">*</span></label>
                         <input type="email" id="eu_email" name="email" required
                                 style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
                     </div>
@@ -503,19 +552,96 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
                     </div>
                 </div>
 
-                <div style="margin-bottom: 0.75rem;">
-                    <label for="eu_status" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Status</label>
-                    <select id="eu_status" name="status" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="PENDING">PENDING</option>
-                        <option value="INACTIVE">INACTIVE</option>
-                    </select>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <label for="eu_status" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Account Status</label>
+                        <select id="eu_status" name="status" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="eu_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Reset Password <span style="font-weight: normal; color: var(--color-muted-text);">(Optional)</span></label>
+                        <input type="password" id="eu_password" name="password" minlength="8" placeholder="Enter new password to reset..."
+                                style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                    </div>
                 </div>
 
+                <!-- Section 2: Position & Assigned Area -->
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
+                    2. Position & Assigned Area
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <label for="eu_position_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Staff Position</label>
+                        <select id="eu_position_id" name="position_id" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            <option value="">-- No Position Assigned --</option>
+                            <?php foreach ($positions as $pos): 
+                                $posId = is_object($pos) ? $pos->id : $pos['id'];
+                                $posTitle = is_object($pos) ? $pos->positionTitle : $pos['position_title'];
+                            ?>
+                                <option value="<?= (int)$posId ?>"><?= $e($posTitle) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small style="font-size: 0.6875rem; color: var(--color-muted-text); display: block; margin-top: 0.25rem;">Official appointment office.</small>
+                    </div>
+                    <div>
+                        <label for="eu_assigned_planning_entity_id" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Assigned Area</label>
+                        <select id="eu_assigned_planning_entity_id" name="assigned_planning_entity_id" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                            <option value="">-- No Area Assigned --</option>
+                            <?php foreach ($entities as $ent): ?>
+                                <option value="<?= (int)$ent['id'] ?>"><?= $e($ent['entity_name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small style="font-size: 0.6875rem; color: var(--color-muted-text); display: block; margin-top: 0.25rem;">Faculty, department, or unit of assignment.</small>
+                    </div>
+                </div>
+
+                <!-- Section 3: Roles and Responsibilities -->
                 <div style="margin-bottom: 0.5rem;">
-                    <label for="eu_password" style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem;">Reset Password <span style="font-weight: normal; color: var(--color-muted-text);">(Leave blank to keep current)</span></label>
-                    <input type="password" id="eu_password" name="password" minlength="8" placeholder="Enter new password to reset..."
-                            style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--color-background); color: var(--color-text);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.25rem;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary);">
+                                3. Assign Roles and Responsibilities
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.6875rem; padding: 0.15rem 0.5rem;" onclick="selectAllCheckboxes('edit_resp_checkbox')">
+                                Select All
+                            </button>
+                            <button type="button" class="btn btn-outline btn-sm" style="font-size: 0.6875rem; padding: 0.15rem 0.5rem;" onclick="clearAllCheckboxes('edit_resp_checkbox')">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8125rem; color: var(--color-muted-text); margin-bottom: 0.75rem;">
+                        What can this staff member do?
+                    </div>
+
+                    <!-- No-Responsibility Warning Banner -->
+                    <div id="edit_no_resp_warning" style="display: none; padding: 0.625rem 0.875rem; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #92400e; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.75rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 0.375rem;"></i>
+                        ⚠ This staff member has no assigned responsibilities. They may be unable to perform operational tasks.
+                    </div>
+
+                    <!-- Responsibilities Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <?php foreach ($responsibilityCatalog as $resp): ?>
+                            <label style="display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.5rem 0.625rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-secondary); cursor: pointer; transition: background 0.15s ease;">
+                                <input type="checkbox" name="responsibilities[]" value="<?= $e($resp['code']) ?>" class="edit_resp_checkbox" onchange="updateNoRespWarning('edit')" style="margin-top: 0.2rem; width: 1rem; height: 1rem; accent-color: var(--color-primary);">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.8125rem; color: var(--color-text); line-height: 1.25;">
+                                        <?= $e($resp['label']) ?>
+                                    </div>
+                                    <div style="font-size: 0.6875rem; color: var(--color-muted-text); margin-top: 0.125rem;">
+                                        <?= $e($resp['description']) ?>
+                                    </div>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -618,15 +744,68 @@ $currentUser = is_callable($user) ? $user() : ($user ?? []);
 const APP_URL = '<?= $e($appUrl ?? '') ?>';
 const CSRF_TOKEN = '<?= \Promis\Core\Security\Csrf::token() ?>';
 
-function openEditModal(userId, firstName, lastName, email, phone, status) {
+async function openEditModal(userId, firstName, lastName, email, phone, status) {
     document.getElementById('editUserForm').action = APP_URL + '/admin/users/' + userId + '/edit';
-    document.getElementById('eu_first_name').value = firstName;
-    document.getElementById('eu_last_name').value = lastName;
-    document.getElementById('eu_email').value = email;
-    document.getElementById('eu_phone').value = phone;
-    document.getElementById('eu_status').value = status;
+    document.getElementById('eu_first_name').value = firstName || '';
+    document.getElementById('eu_last_name').value = lastName || '';
+    document.getElementById('eu_email').value = email || '';
+    document.getElementById('eu_phone').value = phone || '';
+    document.getElementById('eu_status').value = status || 'ACTIVE';
     document.getElementById('eu_password').value = '';
+    document.getElementById('eu_position_id').value = '';
+    document.getElementById('eu_assigned_planning_entity_id').value = '';
+
+    // Clear responsibilities checkboxes initially
+    clearAllCheckboxes('edit_resp_checkbox');
+
     openModal('editUserModal');
+
+    // Fetch user details to populate position, assigned area, and individual responsibilities
+    try {
+        const response = await fetch(APP_URL + '/admin/users/' + userId + '/json', {
+            headers: { 'Accept': 'application/json' }
+        });
+        const json = await response.json();
+        if (json.success && json.data) {
+            const u = json.data.user;
+            if (u.position_id) {
+                document.getElementById('eu_position_id').value = u.position_id;
+            }
+            if (u.assigned_planning_entity_id) {
+                document.getElementById('eu_assigned_planning_entity_id').value = u.assigned_planning_entity_id;
+            }
+            const resps = json.data.responsibilities || [];
+            resps.forEach(code => {
+                const cb = document.querySelector('.edit_resp_checkbox[value="' + code + '"]');
+                if (cb) {
+                    cb.checked = true;
+                }
+            });
+            updateNoRespWarning('edit');
+        }
+    } catch (e) {
+        console.error('Failed to load user details:', e);
+    }
+}
+
+function selectAllCheckboxes(className) {
+    document.querySelectorAll('.' + className).forEach(cb => cb.checked = true);
+    if (className.includes('onboard')) updateNoRespWarning('onboard');
+    if (className.includes('edit')) updateNoRespWarning('edit');
+}
+
+function clearAllCheckboxes(className) {
+    document.querySelectorAll('.' + className).forEach(cb => cb.checked = false);
+    if (className.includes('onboard')) updateNoRespWarning('onboard');
+    if (className.includes('edit')) updateNoRespWarning('edit');
+}
+
+function updateNoRespWarning(prefix) {
+    const checkedCount = document.querySelectorAll('.' + prefix + '_resp_checkbox:checked').length;
+    const warnEl = document.getElementById(prefix + '_no_resp_warning');
+    if (warnEl) {
+        warnEl.style.display = (checkedCount === 0) ? 'block' : 'none';
+    }
 }
 
 async function openAssignModal(userId) {
@@ -716,6 +895,7 @@ async function openAssignModal(userId) {
 
 function validateOnboardForm(form) {
     const password = form.password.value;
+    const confirm = form.password_confirm ? form.password_confirm.value : password;
     if (password.length < 8) {
         if (window.PromisAlert) {
             window.PromisAlert({
@@ -729,8 +909,25 @@ function validateOnboardForm(form) {
         form.password.focus();
         return false;
     }
+    if (password !== confirm) {
+        if (window.PromisAlert) {
+            window.PromisAlert({
+                title: 'Passwords Do Not Match',
+                message: 'Password and Confirm Password fields must match exactly.',
+                type: 'warning'
+            });
+        } else {
+            alert('Password and Confirm Password fields must match exactly.');
+        }
+        if (form.password_confirm) form.password_confirm.focus();
+        return false;
+    }
     return true;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateNoRespWarning('onboard');
+});
 
 function escapeHtml(str) {
     if (!str) return '';

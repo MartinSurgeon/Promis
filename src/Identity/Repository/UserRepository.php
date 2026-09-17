@@ -14,14 +14,18 @@ use Promis\Src\Identity\Domain\DTO\UserDTO;
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
     private const BASE_SELECT = "
-        SELECT `id`, `username`, `email`, `password_hash`, `first_name`, `last_name`, 
-               `phone`, `status`, `last_login_at`, `created_at`, `created_by`
-        FROM `users`
+        SELECT u.`id`, u.`username`, u.`email`, u.`password_hash`, u.`first_name`, u.`last_name`, 
+               u.`phone`, u.`status`, u.`last_login_at`, u.`created_at`, u.`created_by`,
+               u.`position_id`, pos.`position_code`, pos.`position_title`,
+               u.`assigned_planning_entity_id`, pe.`entity_name` as `assigned_entity_name`
+        FROM `users` u
+        LEFT JOIN `positions` pos ON pos.`id` = u.`position_id`
+        LEFT JOIN `planning_entities` pe ON pe.`id` = u.`assigned_planning_entity_id`
     ";
 
     public function findById(int $id): ?UserDTO
     {
-        $sql = self::BASE_SELECT . " WHERE `id` = :id LIMIT 1";
+        $sql = self::BASE_SELECT . " WHERE u.`id` = :id LIMIT 1";
         $row = $this->fetchOne($sql, ['id' => $id]);
 
         return $row !== null ? $this->hydrate($row) : null;
@@ -29,7 +33,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function findByUsername(string $username): ?UserDTO
     {
-        $sql = self::BASE_SELECT . " WHERE `username` = :username LIMIT 1";
+        $sql = self::BASE_SELECT . " WHERE u.`username` = :username LIMIT 1";
         $row = $this->fetchOne($sql, ['username' => $username]);
 
         return $row !== null ? $this->hydrate($row) : null;
@@ -37,7 +41,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function findByEmail(string $email): ?UserDTO
     {
-        $sql = self::BASE_SELECT . " WHERE `email` = :email LIMIT 1";
+        $sql = self::BASE_SELECT . " WHERE u.`email` = :email LIMIT 1";
         $row = $this->fetchOne($sql, ['email' => $email]);
 
         return $row !== null ? $this->hydrate($row) : null;
@@ -45,7 +49,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function findByUsernameOrEmail(string $identifier): ?UserDTO
     {
-        $sql = self::BASE_SELECT . " WHERE `username` = :id1 OR `email` = :id2 LIMIT 1";
+        $sql = self::BASE_SELECT . " WHERE u.`username` = :id1 OR u.`email` = :id2 LIMIT 1";
         $row = $this->fetchOne($sql, ['id1' => $identifier, 'id2' => $identifier]);
 
         return $row !== null ? $this->hydrate($row) : null;
@@ -55,10 +59,12 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         $sql = "INSERT INTO `users` (
                     `username`, `email`, `password_hash`, `first_name`, `last_name`,
-                    `phone`, `status`, `created_by`, `created_at`
+                    `phone`, `status`, `created_by`, `created_at`,
+                    `position_id`, `assigned_planning_entity_id`
                 ) VALUES (
                     :username, :email, :password_hash, :first_name, :last_name,
-                    :phone, :status, :created_by, :created_at
+                    :phone, :status, :created_by, :created_at,
+                    :position_id, :assigned_planning_entity_id
                 )";
 
         $this->execute($sql, [
@@ -71,6 +77,8 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             'status' => $data['status'] ?? 'ACTIVE',
             'created_by' => $data['created_by'] ?? null,
             'created_at' => date('Y-m-d H:i:s'),
+            'position_id' => !empty($data['position_id']) ? (int)$data['position_id'] : null,
+            'assigned_planning_entity_id' => !empty($data['assigned_planning_entity_id']) ? (int)$data['assigned_planning_entity_id'] : null,
         ]);
 
         return (int)$this->db->lastInsertId();
@@ -133,6 +141,16 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             $params['status'] = $data['status'];
         }
 
+        if (array_key_exists('position_id', $data)) {
+            $sets[] = '`position_id` = :position_id';
+            $params['position_id'] = !empty($data['position_id']) ? (int)$data['position_id'] : null;
+        }
+
+        if (array_key_exists('assigned_planning_entity_id', $data)) {
+            $sets[] = '`assigned_planning_entity_id` = :assigned_planning_entity_id';
+            $params['assigned_planning_entity_id'] = !empty($data['assigned_planning_entity_id']) ? (int)$data['assigned_planning_entity_id'] : null;
+        }
+
         if ($updatedBy !== null) {
             $sets[] = '`updated_by` = :updated_by';
             $params['updated_by'] = $updatedBy;
@@ -156,8 +174,12 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         [$whereSql, $params] = $this->buildFilterConditions($search, $roleFilter, $entityFilter, $statusFilter);
 
         $sql = "SELECT DISTINCT u.`id`, u.`username`, u.`email`, u.`first_name`, u.`last_name`, 
-                               u.`phone`, u.`status`, u.`last_login_at`, u.`created_at`, u.`created_by`
+                               u.`phone`, u.`status`, u.`last_login_at`, u.`created_at`, u.`created_by`,
+                               u.`position_id`, pos.`position_code`, pos.`position_title`,
+                               u.`assigned_planning_entity_id`, pe.`entity_name` as `assigned_entity_name`
                 FROM `users` u
+                LEFT JOIN `positions` pos ON pos.`id` = u.`position_id`
+                LEFT JOIN `planning_entities` pe ON pe.`id` = u.`assigned_planning_entity_id`
                 LEFT JOIN `user_entity_roles` uer ON uer.`user_id` = u.`id`
                 LEFT JOIN `roles` r ON r.`id` = uer.`role_id`
                 WHERE {$whereSql}
@@ -230,8 +252,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         }
 
         if ($entityFilter !== null && $entityFilter > 0) {
-            $where[] = "uer.`planning_entity_id` = :pe_id AND uer.`status` = 'ACTIVE'";
+            $where[] = "(uer.`planning_entity_id` = :pe_id AND uer.`status` = 'ACTIVE' OR u.`assigned_planning_entity_id` = :pe_id2)";
             $params['pe_id'] = $entityFilter;
+            $params['pe_id2'] = $entityFilter;
         }
 
         if ($statusFilter !== '') {
@@ -243,7 +266,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     }
 
     /**
-     * Hydrate raw row into UserDTO with attached active roles and permissions.
+     * Hydrate raw row into UserDTO with attached active roles, permissions, position, and responsibilities.
      */
     private function hydrate(array $row): UserDTO
     {
@@ -299,6 +322,13 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             }
         }
 
+        // 3. Fetch active individual responsibilities
+        $respSql = "SELECT `responsibility_code`
+                    FROM `user_responsibilities`
+                    WHERE `user_id` = :uid AND `is_active` = 1";
+        $respRows = $this->fetchAll($respSql, ['uid' => $userId]);
+        $responsibilities = array_column($respRows, 'responsibility_code');
+
         return new UserDTO(
             id: $userId,
             username: (string)$row['username'],
@@ -314,7 +344,13 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             roles: $roles,
             roleIds: $roleIds,
             permissions: $globalPermissions,
-            entityPermissions: $entityPermissions
+            entityPermissions: $entityPermissions,
+            positionId: !empty($row['position_id']) ? (int)$row['position_id'] : null,
+            positionCode: !empty($row['position_code']) ? (string)$row['position_code'] : null,
+            positionTitle: !empty($row['position_title']) ? (string)$row['position_title'] : null,
+            assignedPlanningEntityId: !empty($row['assigned_planning_entity_id']) ? (int)$row['assigned_planning_entity_id'] : null,
+            assignedEntityName: !empty($row['assigned_entity_name']) ? (string)$row['assigned_entity_name'] : null,
+            responsibilities: $responsibilities
         );
     }
 }

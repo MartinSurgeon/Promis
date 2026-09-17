@@ -9,6 +9,9 @@ namespace Promis\Src\Identity\Domain\DTO;
  */
 class CreateUserDTO
 {
+    /**
+     * @param string[] $responsibilities
+     */
     public function __construct(
         public readonly string $username,
         public readonly string $email,
@@ -19,12 +22,25 @@ class CreateUserDTO
         public readonly string $status = 'ACTIVE',
         public readonly ?int $initialRoleId = null,
         public readonly ?int $initialPlanningEntityId = null,
-        public readonly bool $isPrimary = true
+        public readonly bool $isPrimary = true,
+        public readonly ?int $positionId = null,
+        public readonly ?int $assignedPlanningEntityId = null,
+        public readonly array $responsibilities = []
     ) {
     }
 
     public static function fromArray(array $data): self
     {
+        $rawResponsibilities = $data['responsibilities'] ?? [];
+        if (!is_array($rawResponsibilities)) {
+            $rawResponsibilities = [];
+        }
+
+        $positionId = !empty($data['position_id']) ? (int)$data['position_id'] : null;
+        $assignedEntityId = !empty($data['assigned_planning_entity_id']) 
+            ? (int)$data['assigned_planning_entity_id'] 
+            : (!empty($data['initial_planning_entity_id']) ? (int)$data['initial_planning_entity_id'] : null);
+
         return new self(
             username: trim((string)($data['username'] ?? '')),
             email: trim((string)($data['email'] ?? '')),
@@ -34,8 +50,11 @@ class CreateUserDTO
             password: (string)($data['password'] ?? ''),
             status: in_array($data['status'] ?? 'ACTIVE', ['ACTIVE', 'INACTIVE', 'PENDING'], true) ? (string)$data['status'] : 'ACTIVE',
             initialRoleId: !empty($data['initial_role_id']) ? (int)$data['initial_role_id'] : null,
-            initialPlanningEntityId: !empty($data['initial_planning_entity_id']) ? (int)$data['initial_planning_entity_id'] : null,
-            isPrimary: (bool)($data['is_primary'] ?? true)
+            initialPlanningEntityId: $assignedEntityId,
+            isPrimary: (bool)($data['is_primary'] ?? true),
+            positionId: $positionId,
+            assignedPlanningEntityId: $assignedEntityId,
+            responsibilities: array_values(array_filter(array_map('strval', $rawResponsibilities)))
         );
     }
 }

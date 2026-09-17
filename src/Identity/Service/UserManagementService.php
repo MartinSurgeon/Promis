@@ -21,9 +21,15 @@ use Promis\Src\Identity\Repository\UserRepository;
 use Promis\Src\Identity\Repository\UserRepositoryInterface;
 use Throwable;
 
+use Promis\Src\Identity\Domain\Model\ResponsibilityCode;
+use Promis\Src\Identity\Repository\PositionRepository;
+use Promis\Src\Identity\Repository\PositionRepositoryInterface;
+use Promis\Src\Identity\Repository\UserResponsibilityRepository;
+use Promis\Src\Identity\Repository\UserResponsibilityRepositoryInterface;
+
 /**
  * Enterprise Service implementation for User Onboarding, Profile Lifecycle,
- * and Entity-Scoped Role Allocation with Audit Logging.
+ * Position Appointments, and Individual Responsibility Allocation with Audit Logging.
  */
 class UserManagementService implements UserManagementServiceInterface
 {
@@ -33,13 +39,17 @@ class UserManagementService implements UserManagementServiceInterface
         private ?UserRepositoryInterface $userRepository = null,
         private ?UserEntityRoleRepositoryInterface $uerRepository = null,
         private ?PlanningEntityRepositoryInterface $entityRepository = null,
-        private ?AuditLogRepositoryInterface $auditLogRepository = null
+        private ?AuditLogRepositoryInterface $auditLogRepository = null,
+        private ?PositionRepositoryInterface $positionRepository = null,
+        private ?UserResponsibilityRepositoryInterface $responsibilityRepository = null
     ) {
         $this->db = Connection::get();
         $this->userRepository = $this->userRepository ?? new UserRepository();
         $this->uerRepository = $this->uerRepository ?? new UserEntityRoleRepository();
         $this->entityRepository = $this->entityRepository ?? new PlanningEntityRepository();
         $this->auditLogRepository = $this->auditLogRepository ?? new AuditLogRepository();
+        $this->positionRepository = $this->positionRepository ?? new PositionRepository();
+        $this->responsibilityRepository = $this->responsibilityRepository ?? new UserResponsibilityRepository();
     }
 
     public function getUsersPaginated(
@@ -60,6 +70,7 @@ class UserManagementService implements UserManagementServiceInterface
 
         $userIds = array_map(fn($u) => (int)$u['id'], $rawUsers);
         $groupedAssignments = $this->uerRepository->getGroupedAssignmentsByUserIds($userIds);
+        $groupedResponsibilities = $this->responsibilityRepository->getGroupedResponsibilitiesByUserIds($userIds);
 
         $users = [];
         foreach ($rawUsers as $u) {
@@ -69,6 +80,8 @@ class UserManagementService implements UserManagementServiceInterface
             $u['roles'] = $assignData['roles'];
             $u['entities'] = $assignData['entities'];
             $u['assignments'] = $assignData['assignments'];
+            $u['responsibilities'] = $groupedResponsibilities[$uid] ?? [];
+            $u['has_no_responsibilities'] = empty($u['responsibilities']);
             $users[] = $u;
         }
 
@@ -90,10 +103,12 @@ class UserManagementService implements UserManagementServiceInterface
         }
 
         $assignments = $this->uerRepository->findByUserId($userId);
+        $responsibilities = $this->responsibilityRepository->getActiveResponsibilityCodes($userId);
 
         return [
             'user' => $user->toArray(),
             'assignments' => array_map(fn($a) => $a->toArray(), $assignments),
+            'responsibilities' => $responsibilities,
         ];
     }
 
@@ -131,9 +146,42 @@ class UserManagementService implements UserManagementServiceInterface
             throw new ValidationException("Email '{$dto->email}' is already in use by another user account.");
         }
 
+        // Validate Position if provided
+        $position = null;
+        if ($dto->positionId !== null && $dto->positionId > 0) {
+            $position = $this->positionRepository->findById($dto->positionId);
+            if (!$position || !$position->isActive) {
+                throw new ValidationException('Selected staff position is invalid or inactive.');
+            }
+        }
+
+        // Validate Assigned Area if provided
+        $assignedEntity = null;
+        $targetEntityId = $dto->assignedPlanningEntityId ?? $dto->initialPlanningEntityId;
+        if ($targetEntityId !== null && $targetEntityId > 0) {
+            $assignedEntity = $this->entityRepository->findById($targetEntityId);
+            if (!$assignedEntity) {
+                throw new ValidationException('Selected assigned area / planning entity is invalid.');
+            }
+        }
+
+        // Validate Responsibilities if provided
+        $cleanResponsibilities = [];
+        if (!empty($dto->responsibilities)) {
+            foreach ($dto->responsibilities as $code) {
+                $codeUpper = strtoupper(trim((string)$code));
+                if (ResponsibilityCode::isValid($codeUpper)) {
+                    $cleanResponsibilities[] = $codeUpper;
+                }
+            }
+            $cleanResponsibilities = array_values(array_unique($cleanResponsibilities));
+        }
+
         $this->db->beginTransaction();
         try {
             $hashedPassword = password_hash($dto->password, PASSWORD_BCRYPT, ['cost' => 12]);
+
+            $effectiveEntityId = $assignedEntity ? (int)$assignedEntity['id'] : null;
 
             $userId = $this->userRepository->create([
                 'username' => $dto->username,
@@ -144,34 +192,43 @@ class UserManagementService implements UserManagementServiceInterface
                 'phone' => $dto->phone,
                 'status' => $dto->status,
                 'created_by' => $actorUserId,
+                'position_id' => $position?->id,
+                'assigned_planning_entity_id' => $effectiveEntityId,
             ]);
 
-            // Optional Initial Role & Department Allocation
-            if ($dto->initialRoleId && $dto->initialPlanningEntityId) {
-                $role = $this->entityRepository->findRoleById($dto->initialRoleId);
-                if (!$role) {
-                    throw new ValidationException('Selected initial role is invalid.');
-                }
-                $entity = $this->entityRepository->findById($dto->initialPlanningEntityId);
-                if (!$entity) {
-                    throw new ValidationException('Selected initial planning entity is invalid.');
-                }
-
-                $this->uerRepository->create([
-                    'user_id' => $userId,
-                    'planning_entity_id' => $dto->initialPlanningEntityId,
-                    'role_id' => $dto->initialRoleId,
-                    'is_primary' => $dto->isPrimary ? 1 : 0,
-                    'status' => 'ACTIVE',
-                    'assigned_by' => $actorUserId,
-                ]);
+            // Save individual responsibilities if area is assigned
+            if ($effectiveEntityId !== null && !empty($cleanResponsibilities)) {
+                $this->responsibilityRepository->syncUserResponsibilities(
+                    $userId,
+                    $effectiveEntityId,
+                    $cleanResponsibilities,
+                    $actorUserId
+                );
             }
+
+            // Legacy backward-compatibility: if initialRoleId was provided, save into user_entity_roles
+            if ($dto->initialRoleId && $effectiveEntityId !== null) {
+                $role = $this->entityRepository->findRoleById($dto->initialRoleId);
+                if ($role) {
+                    $this->uerRepository->create([
+                        'user_id' => $userId,
+                        'planning_entity_id' => $effectiveEntityId,
+                        'role_id' => $dto->initialRoleId,
+                        'is_primary' => $dto->isPrimary ? 1 : 0,
+                        'status' => 'ACTIVE',
+                        'assigned_by' => $actorUserId,
+                    ]);
+                }
+            }
+
+            $hasNoResponsibilities = empty($cleanResponsibilities);
+            $hasSelfApproval = in_array(ResponsibilityCode::APPROVE_OWN, $cleanResponsibilities, true);
 
             // Institutional Audit Log
             $this->auditLogRepository->create([
                 'event_timestamp' => date('Y-m-d H:i:s'),
                 'actor_user_id' => $actorUserId,
-                'planning_entity_id' => $dto->initialPlanningEntityId,
+                'planning_entity_id' => $effectiveEntityId,
                 'action' => 'USER_ONBOARDED',
                 'record_type' => 'users',
                 'record_id' => $userId,
@@ -185,10 +242,50 @@ class UserManagementService implements UserManagementServiceInterface
                     'first_name' => $dto->firstName,
                     'last_name' => $dto->lastName,
                     'status' => $dto->status,
-                    'initial_role_id' => $dto->initialRoleId,
-                    'initial_entity_id' => $dto->initialPlanningEntityId,
+                    'position' => $position?->positionCode,
+                    'assigned_planning_entity_id' => $effectiveEntityId,
+                    'responsibilities' => $cleanResponsibilities,
+                    'has_no_responsibilities' => $hasNoResponsibilities,
+                    'self_approval_granted' => $hasSelfApproval,
                 ], JSON_THROW_ON_ERROR),
             ]);
+
+            if ($hasNoResponsibilities) {
+                $this->auditLogRepository->create([
+                    'event_timestamp' => date('Y-m-d H:i:s'),
+                    'actor_user_id' => $actorUserId,
+                    'planning_entity_id' => $effectiveEntityId,
+                    'action' => 'USER_SAVED_WITH_NO_RESPONSIBILITIES',
+                    'record_type' => 'users',
+                    'record_id' => $userId,
+                    'ip_address' => $ipAddress,
+                    'user_agent' => $userAgent,
+                    'previous_state_json' => null,
+                    'new_state_json' => json_encode([
+                        'warning' => 'This staff member has no assigned responsibilities. They may be unable to perform operational tasks.'
+                    ], JSON_THROW_ON_ERROR),
+                ]);
+            }
+
+            if ($hasSelfApproval) {
+                $this->auditLogRepository->create([
+                    'event_timestamp' => date('Y-m-d H:i:s'),
+                    'actor_user_id' => $actorUserId,
+                    'planning_entity_id' => $effectiveEntityId,
+                    'action' => 'SELF_APPROVAL_GRANTED',
+                    'record_type' => 'user_responsibilities',
+                    'record_id' => $userId,
+                    'ip_address' => $ipAddress,
+                    'user_agent' => $userAgent,
+                    'previous_state_json' => null,
+                    'new_state_json' => json_encode([
+                        'user_id' => $userId,
+                        'planning_entity_id' => $effectiveEntityId,
+                        'responsibility_code' => 'APPROVE_OWN',
+                        'notice' => 'Explicit self-approval granted by administrator.'
+                    ], JSON_THROW_ON_ERROR),
+                ]);
+            }
 
             $this->db->commit();
             return $userId;
@@ -242,13 +339,95 @@ class UserManagementService implements UserManagementServiceInterface
                 $dataToUpdate['status'] = $dto->status;
             }
 
+            // Position update if provided
+            if ($dto->positionId !== null) {
+                if ($dto->positionId > 0) {
+                    $pos = $this->positionRepository->findById($dto->positionId);
+                    if (!$pos || !$pos->isActive) {
+                        throw new ValidationException('Selected staff position is invalid or inactive.');
+                    }
+                }
+                $dataToUpdate['position_id'] = $dto->positionId > 0 ? $dto->positionId : null;
+            }
+
+            // Assigned Area update if provided
+            if ($dto->assignedPlanningEntityId !== null) {
+                if ($dto->assignedPlanningEntityId > 0) {
+                    $ent = $this->entityRepository->findById($dto->assignedPlanningEntityId);
+                    if (!$ent) {
+                        throw new ValidationException('Selected assigned area / planning entity is invalid.');
+                    }
+                }
+                $dataToUpdate['assigned_planning_entity_id'] = $dto->assignedPlanningEntityId > 0 ? $dto->assignedPlanningEntityId : null;
+            }
+
             $this->userRepository->updateProfile($dto->id, $dataToUpdate, $actorUserId);
 
-            // Audit Log
+            $effectiveEntityId = $dto->assignedPlanningEntityId ?? $existing->assignedPlanningEntityId ?? 0;
+
+            // Sync responsibilities if array was explicitly provided
+            if ($dto->responsibilities !== null && $effectiveEntityId > 0) {
+                $oldResps = $this->responsibilityRepository->getActiveResponsibilityCodes($dto->id, $effectiveEntityId);
+                $this->responsibilityRepository->syncUserResponsibilities(
+                    $dto->id,
+                    $effectiveEntityId,
+                    $dto->responsibilities,
+                    $actorUserId
+                );
+                $newResps = $dto->responsibilities;
+
+                $hadSelf = in_array(ResponsibilityCode::APPROVE_OWN, $oldResps, true);
+                $nowSelf = in_array(ResponsibilityCode::APPROVE_OWN, $newResps, true);
+
+                if (!$hadSelf && $nowSelf) {
+                    $this->auditLogRepository->create([
+                        'event_timestamp' => date('Y-m-d H:i:s'),
+                        'actor_user_id' => $actorUserId,
+                        'planning_entity_id' => $effectiveEntityId,
+                        'action' => 'SELF_APPROVAL_GRANTED',
+                        'record_type' => 'user_responsibilities',
+                        'record_id' => $dto->id,
+                        'ip_address' => $ipAddress,
+                        'user_agent' => $userAgent,
+                        'previous_state_json' => json_encode(['APPROVE_OWN' => false], JSON_THROW_ON_ERROR),
+                        'new_state_json' => json_encode(['APPROVE_OWN' => true], JSON_THROW_ON_ERROR),
+                    ]);
+                } elseif ($hadSelf && !$nowSelf) {
+                    $this->auditLogRepository->create([
+                        'event_timestamp' => date('Y-m-d H:i:s'),
+                        'actor_user_id' => $actorUserId,
+                        'planning_entity_id' => $effectiveEntityId,
+                        'action' => 'SELF_APPROVAL_REVOKED',
+                        'record_type' => 'user_responsibilities',
+                        'record_id' => $dto->id,
+                        'ip_address' => $ipAddress,
+                        'user_agent' => $userAgent,
+                        'previous_state_json' => json_encode(['APPROVE_OWN' => true], JSON_THROW_ON_ERROR),
+                        'new_state_json' => json_encode(['APPROVE_OWN' => false], JSON_THROW_ON_ERROR),
+                    ]);
+                }
+
+                if (empty($newResps)) {
+                    $this->auditLogRepository->create([
+                        'event_timestamp' => date('Y-m-d H:i:s'),
+                        'actor_user_id' => $actorUserId,
+                        'planning_entity_id' => $effectiveEntityId,
+                        'action' => 'USER_SAVED_WITH_NO_RESPONSIBILITIES',
+                        'record_type' => 'users',
+                        'record_id' => $dto->id,
+                        'ip_address' => $ipAddress,
+                        'user_agent' => $userAgent,
+                        'previous_state_json' => json_encode(['responsibilities' => $oldResps], JSON_THROW_ON_ERROR),
+                        'new_state_json' => json_encode(['responsibilities' => []], JSON_THROW_ON_ERROR),
+                    ]);
+                }
+            }
+
+            // General Profile Update Audit Log
             $this->auditLogRepository->create([
                 'event_timestamp' => date('Y-m-d H:i:s'),
                 'actor_user_id' => $actorUserId,
-                'planning_entity_id' => null,
+                'planning_entity_id' => $effectiveEntityId > 0 ? $effectiveEntityId : null,
                 'action' => 'USER_PROFILE_UPDATED',
                 'record_type' => 'users',
                 'record_id' => $dto->id,
@@ -260,6 +439,8 @@ class UserManagementService implements UserManagementServiceInterface
                     'email' => $existing->email,
                     'phone' => $existing->phone,
                     'status' => $existing->status,
+                    'position_id' => $existing->positionId,
+                    'assigned_planning_entity_id' => $existing->assignedPlanningEntityId,
                 ], JSON_THROW_ON_ERROR),
                 'new_state_json' => json_encode($dataToUpdate, JSON_THROW_ON_ERROR),
             ]);
@@ -497,6 +678,8 @@ class UserManagementService implements UserManagementServiceInterface
         return [
             'entities' => $this->entityRepository->findAllActive(),
             'roles' => $this->entityRepository->findAllActiveRoles(),
+            'positions' => $this->positionRepository->findAllActive(),
+            'responsibilities' => ResponsibilityCode::all(),
             'metrics' => $this->userRepository->getSummaryMetrics(),
         ];
     }
